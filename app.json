@@ -1,0 +1,59 @@
+{
+  "expo": {
+    "name": "FinTwin",
+    "slug": "fintwin",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/logo.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F0F4FF"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.fintwin.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Bu uygulama kamera kullanmaz.",
+        "NSPhotoLibraryUsageDescription": "PDF dosyası seçmek için fotoğraf kütüphanesi gereklidir."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#0F0F1A"
+      },
+      "package": "com.fintwin.app",
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/logo.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-document-picker",
+        {
+          "iCloudContainerEnvironment": "Production"
+        }
+      ],
+      "expo-sqlite"
+    ],
+    "scheme": "fintwin",
+    "extra": {
+      "apiUrl": "http://192.168.0.36:8000",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "e191a72b-44f1-493d-aead-5505f91ef6fe"
+      }
+    },
+    "owner": "erenyonar"
+  }
+}
