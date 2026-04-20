@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
-  AuthAPI, UserAPI,
+  AuthAPI, UserAPI, TransactionAPI,
   Transaction, TransactionCreate, UserProfile,
 } from '../services/api';
 import {
@@ -91,8 +91,13 @@ export const useStore = create<AppStore>((set, get) => ({
     await AsyncStorage.setItem('fintwin_user', JSON.stringify(user));
     setCurrentUser(getUserKey(user));
     set({ token: access_token, user, isLoggedIn: true, lang: user.lang || 'TR' });
-    const txs = await getAllTransactions();
-    set({ transactions: txs, analytics: calcAnalytics(txs) });
+    
+    // Local işlemleri yükle
+    const localTxs = await getAllTransactions();
+    set({ transactions: localTxs, analytics: calcAnalytics(localTxs) });
+    
+    // Backend ile sync et
+    get().syncWithServer();
     get().loadExchangeRates();
   },
 
@@ -101,17 +106,13 @@ export const useStore = create<AppStore>((set, get) => ({
   },
 
   logout: async () => {
-    // 1. Önce state'i temizle — navigation hemen AuthStack'e geçer
     set({
       token: null, user: null, isLoggedIn: false,
       transactions: [], analytics: null, trends: [],
     });
-    // 2. Sadece session bilgilerini temizle — işlem verileri DB'de KORUNUR
     try {
       await AsyncStorage.multiRemove(['fintwin_token', 'fintwin_user']);
     } catch (e) { console.warn('AsyncStorage clear:', e); }
-    // NOT: clearAllLocal() kasıtlı olarak ÇAĞIRILMIYOR
-    // Kullanıcı tekrar giriş yapınca verileri user_key ile geri yüklenir
     setCurrentUser('default');
   },
 
@@ -123,25 +124,111 @@ export const useStore = create<AppStore>((set, get) => ({
   },
 
   addTx: async (data) => {
-    await addTransaction({ ...data, local_id: uuidv4() });
+    const local_id = uuidv4();
+    // 1. Local'e kaydet
+    await addTransaction({ ...data, local_id });
     const txs = await getAllTransactions();
     set({ transactions: txs, analytics: calcAnalytics(txs) });
+    
+    // 2. Backend'e gönder
+    const { token } = get();
+    if (token) {
+      try {
+        await TransactionAPI.create({ ...data, local_id });
+      } catch (e) {
+        console.warn('[Store] addTx backend sync failed:', e);
+      }
+    }
   },
 
   updateTx: async (local_id, data) => {
     await updateTransaction(local_id, data);
     const txs = await getAllTransactions();
     set({ transactions: txs, analytics: calcAnalytics(txs) });
+    
+    // Backend'de id bul ve güncelle
+    const { token } = get();
+    if (token) {
+      try {
+        const tx = txs.find(t => t.local_id === local_id);
+        if (tx?.id) {
+          await TransactionAPI.update(tx.id, data);
+        }
+      } catch (e) {
+        console.warn('[Store] updateTx backend sync failed:', e);
+      }
+    }
   },
 
   deleteTx: async (local_id) => {
+    const { transactions, token } = get();
+    const tx = transactions.find(t => t.local_id === local_id);
+    
     await deleteTransaction(local_id);
     const txs = await getAllTransactions();
     set({ transactions: txs, analytics: calcAnalytics(txs) });
+    
+    // Backend'den sil
+    if (token && tx?.id) {
+      try {
+        await TransactionAPI.delete(tx.id);
+      } catch (e) {
+        console.warn('[Store] deleteTx backend sync failed:', e);
+      }
+    }
   },
 
-  syncWithServer: async () => {},
-  scheduleSync: () => {},
+  syncWithServer: async () => {
+    const { token, syncState } = get();
+    if (!token || syncState.isSyncing) return;
+    
+    set({ syncState: { ...syncState, isSyncing: true } });
+    
+    try {
+      const localTxs = await getAllTransactions();
+      const now = new Date().toISOString();
+      
+      // Tüm local işlemleri backend'e gönder
+      const payload = {
+        device_id: 'mobile',
+        transactions: localTxs.map(tx => ({
+          tarih: tx.tarih,
+          kategori: tx.kategori,
+          detay: tx.detay,
+          tutar: tx.tutar,
+          tutar_orijinal: tx.tutar_orijinal,
+          para_birimi: tx.para_birimi,
+          tip: tx.tip,
+          logo: tx.logo,
+          local_id: tx.local_id,
+        })),
+        last_sync: syncState.lastSync || undefined,
+      };
+      
+      await TransactionAPI.sync(payload);
+      
+      set({
+        syncState: {
+          isSyncing: false,
+          lastSync: now,
+          pendingCount: 0,
+          isOnline: true,
+        }
+      });
+      
+      await AsyncStorage.setItem('fintwin_last_sync', now);
+    } catch (e) {
+      console.warn('[Store] syncWithServer failed:', e);
+      set({ syncState: { ...get().syncState, isSyncing: false, isOnline: false } });
+    }
+  },
+
+  scheduleSync: () => {
+    // Her 5 dakikada bir sync
+    setInterval(() => {
+      get().syncWithServer();
+    }, 5 * 60 * 1000);
+  },
 
   loadAnalytics: async () => {
     set({ analytics: calcAnalytics(get().transactions) });
@@ -187,14 +274,14 @@ export const useStore = create<AppStore>((set, get) => ({
 // ── Session restore ───────────────────────────────────────────────────────────
 export async function restoreSession() {
   try {
-    const [token, userStr, lang, theme] = await Promise.all([
+    const [token, userStr, lang, theme, lastSync] = await Promise.all([
       AsyncStorage.getItem('fintwin_token'),
       AsyncStorage.getItem('fintwin_user'),
       AsyncStorage.getItem('fintwin_lang'),
       AsyncStorage.getItem('fintwin_theme'),
+      AsyncStorage.getItem('fintwin_last_sync'),
     ]);
 
-    // Tema uygula
     const themeMode = (theme === 'light' ? 'light' : 'dark') as 'dark' | 'light';
     applyTheme(themeMode);
     useStore.setState({ themeMode });
@@ -205,10 +292,18 @@ export async function restoreSession() {
       useStore.setState({
         token, user, isLoggedIn: true,
         lang: (lang as 'TR' | 'EN') || user.lang || 'TR',
+        syncState: {
+          isSyncing: false,
+          lastSync: lastSync || null,
+          pendingCount: 0,
+          isOnline: true,
+        }
       });
       const txs = await getAllTransactions();
       useStore.setState({ transactions: txs, analytics: calcAnalytics(txs) });
       useStore.getState().loadExchangeRates();
+      // Uygulama açılınca sync yap
+      useStore.getState().syncWithServer();
     }
   } catch (e) {
     console.error('[restoreSession]:', e);
