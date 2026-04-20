@@ -11,7 +11,7 @@ import { useStore } from '../store/useStore';
 import { Card, SectionHeader, EmptyState } from '../components/UI';
 import RecentTransactionsWidget from '../components/RecentTransactionsWidget';
 import AccountActionsWidget from '../components/AccountActionsWidget';
-import { Colors, Spacing, Radius, Shadow } from '../utils/theme';
+import { useColors, Colors, Spacing, Radius, Shadow } from '../utils/theme';
 import { useTranslation } from '../hooks/useTranslation';
 import { useNavigation } from '@react-navigation/native';
 
@@ -49,6 +49,8 @@ function arcPath(cx: number, cy: number, r: number, start: number, end: number):
 interface PieItem { label: string; value: number; color: string; pct: number }
 
 function DonutChart({ items, total }: { items: PieItem[]; total: number }) {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   const size  = CHART_W * 0.55;
   const cx    = size / 2;
   const cy    = size / 2;
@@ -70,7 +72,7 @@ function DonutChart({ items, total }: { items: PieItem[]; total: number }) {
           <Path key={i} d={s.path} fill={s.color} />
         ))}
         {/* İç daire — donut */}
-        <Circle cx={cx} cy={cy} r={rInner} fill="#1A1A2E" />
+        <Circle cx={cx} cy={cy} r={rInner} fill={Colors.bgCard} />
         <SvgText
           x={cx} y={cy - 8} textAnchor="middle"
           fontSize={13} fontWeight="800" fill={Colors.text}
@@ -119,7 +121,7 @@ function MonthlyBarChart({ data, lang }: { data: MonthBar[]; lang: string }) {
         const y = chartH - chartH * f;
         return (
           <G key={i}>
-            <Line x1={padL} y1={y} x2={W} y2={y} stroke="#2E2E4A" strokeWidth={1} />
+            <Line x1={padL} y1={y} x2={W} y2={y} stroke={Colors.border} strokeWidth={1} />
           </G>
         );
       })}
@@ -159,6 +161,8 @@ function MonthlyBarChart({ data, lang }: { data: MonthBar[]; lang: string }) {
 
 // ── Progress Bar ─────────────────────────────────────────────────────────────
 function ProgressBar({ pct, color }: { pct: number; color: string }) {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   const clamp = Math.min(Math.max(pct, 0), 100);
   return (
     <View style={styles.progressTrack}>
@@ -199,6 +203,8 @@ function ScoreRing({ score }: { score: number }) {
 
 // ── Ana Ekran ─────────────────────────────────────────────────────────────────
 export default function AnalysisScreen() {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   const { t, lang } = useTranslation();
   const navigation  = useNavigation<any>();
   const { transactions, analytics, user } = useStore();
@@ -427,56 +433,56 @@ export default function AnalysisScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe:    { flex: 1, backgroundColor: '#0F0F1A' },
-  scroll:  { flex: 1, backgroundColor: '#0F0F1A' },
+const make_styles = (C: any) => StyleSheet.create({
+  safe:    { flex: 1, backgroundColor: C.bg },
+  scroll:  { flex: 1, backgroundColor: C.bg },
   content: { padding: Spacing.lg, gap: Spacing.sm },
 
   // ── Header ──────────────────────────────────────────────────────────────
   headerGrad: {
     paddingTop: 20, paddingBottom: 24, paddingHorizontal: 24,
-    backgroundColor: '#0F0F1A',
+    backgroundColor: C.bg,
   },
   headerCircle1: { width: 0, height: 0 },
   headerCircle2: { width: 0, height: 0 },
   headerEmoji: { fontSize: 30, marginBottom: 6 },
-  headerTitle: { fontSize: 24, fontWeight: '900', color: Colors.text, letterSpacing: -0.5 },
-  headerSub:   { fontSize: 13, color: Colors.textMuted, marginTop: 4 },
+  headerTitle: { fontSize: 24, fontWeight: '900', color: C.text, letterSpacing: -0.5 },
+  headerSub:   { fontSize: 13, color: C.textMuted, marginTop: 4 },
 
   // ── Özet ────────────────────────────────────────────────────────────────
   summaryRow: { flexDirection: 'row', gap: Spacing.sm },
   summaryCard: {
-    flex: 1, backgroundColor: Colors.bgCard, borderRadius: Radius.lg,
+    flex: 1, backgroundColor: C.bgCard, borderRadius: Radius.lg,
     padding: Spacing.md, borderTopWidth: 3, alignItems: 'center',
     ...Shadow.sm,
   },
   summaryIcon:  { fontSize: 18, marginBottom: 2 },
-  summaryLabel: { fontSize: 10, color: Colors.textMuted, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+  summaryLabel: { fontSize: 10, color: C.textMuted, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
   summaryValue: { fontSize: 14, fontWeight: '900', marginTop: 4 },
 
   // ── Skor ────────────────────────────────────────────────────────────────
   scoreRow:       { flexDirection: 'row', alignItems: 'center', gap: Spacing.lg },
   scoreStats:     { flex: 1 },
   progressLabelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  progressLabel:  { fontSize: 12, color: Colors.textMuted, fontWeight: '600' },
+  progressLabel:  { fontSize: 12, color: C.textMuted, fontWeight: '600' },
   progressPct:    { fontSize: 12, fontWeight: '800' },
-  progressTrack:  { height: 8, backgroundColor: Colors.bgElevated, borderRadius: 4, overflow: 'hidden' },
+  progressTrack:  { height: 8, backgroundColor: C.bgElevated, borderRadius: 4, overflow: 'hidden' },
   progressFill:   { height: 8, borderRadius: 4 },
   savingsTip:     { backgroundColor: 'rgba(52,211,153,0.12)', borderRadius: Radius.sm, padding: Spacing.sm, marginTop: 4, borderWidth: 1, borderColor: 'rgba(52,211,153,0.25)' },
-  savingsTipText: { fontSize: 11, color: Colors.success, fontWeight: '700' },
+  savingsTipText: { fontSize: 11, color: C.success, fontWeight: '700' },
 
   // ── Donut Legend ─────────────────────────────────────────────────────────
   legendRow:   { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot:   { width: 10, height: 10, borderRadius: 5 },
-  legendLabel: { flex: 1, fontSize: 11, color: Colors.text, fontWeight: '600' },
-  legendPct:   { fontSize: 11, color: Colors.textMuted, fontWeight: '700' },
+  legendLabel: { flex: 1, fontSize: 11, color: C.text, fontWeight: '600' },
+  legendPct:   { fontSize: 11, color: C.textMuted, fontWeight: '700' },
 
   // ── Bar Legend ────────────────────────────────────────────────────────────
   barLegend:     { flexDirection: 'row', gap: 16, marginBottom: 12 },
   barLegendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   barLegendDot:  { width: 10, height: 10, borderRadius: 3 },
-  barLegendText: { fontSize: 11, color: Colors.textMuted, fontWeight: '600' },
-  noMonthData:   { fontSize: 12, color: Colors.textLight, textAlign: 'center', paddingVertical: 8 },
+  barLegendText: { fontSize: 11, color: C.textMuted, fontWeight: '600' },
+  noMonthData:   { fontSize: 12, color: C.textLight, textAlign: 'center', paddingVertical: 8 },
 
   // ── Kategori List ─────────────────────────────────────────────────────────
   catList:         { gap: 10 },
@@ -484,23 +490,23 @@ const styles = StyleSheet.create({
   catColorBar:     { width: 4, height: 36, borderRadius: 2 },
   catIcon:         { fontSize: 20, width: 28 },
   catLabelRow:     { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 3 },
-  catLabel:        { fontSize: 12, fontWeight: '700', color: Colors.text, flex: 1 },
-  catAmount:       { fontSize: 12, fontWeight: '900', color: Colors.primary },
-  catPct:          { fontSize: 10, color: Colors.textMuted, marginTop: 2 },
-  catProgressTrack:{ height: 5, backgroundColor: Colors.bgElevated, borderRadius: 3, overflow: 'hidden' },
+  catLabel:        { fontSize: 12, fontWeight: '700', color: C.text, flex: 1 },
+  catAmount:       { fontSize: 12, fontWeight: '900', color: C.primary },
+  catPct:          { fontSize: 10, color: C.textMuted, marginTop: 2 },
+  catProgressTrack:{ height: 5, backgroundColor: C.bgElevated, borderRadius: 3, overflow: 'hidden' },
   catProgressFill: { height: 5, borderRadius: 3 },
 
   // ── Top İşlemler ──────────────────────────────────────────────────────────
-  topTxRow:      { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  topTxRow:      { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: C.border },
   topTxRank:     { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  topTxRankText: { fontSize: 12, fontWeight: '800', color: Colors.text },
-  topTxDesc:     { fontSize: 13, fontWeight: '700', color: Colors.text },
-  topTxMeta:     { fontSize: 11, color: Colors.textMuted, marginTop: 1 },
-  topTxAmount:   { fontSize: 14, fontWeight: '900', color: Colors.danger },
+  topTxRankText: { fontSize: 12, fontWeight: '800', color: C.text },
+  topTxDesc:     { fontSize: 13, fontWeight: '700', color: C.text },
+  topTxMeta:     { fontSize: 11, color: C.textMuted, marginTop: 1 },
+  topTxAmount:   { fontSize: 14, fontWeight: '900', color: C.danger },
 
   // ── Ekle butonu ───────────────────────────────────────────────────────────
   addBtn: {
-    backgroundColor: Colors.primary, borderRadius: Radius.lg,
+    backgroundColor: C.primary, borderRadius: Radius.lg,
     paddingVertical: 14, alignItems: 'center', marginTop: 12,
   },
   addBtnText: { color: '#fff', fontSize: 14, fontWeight: '800' },

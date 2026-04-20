@@ -11,7 +11,7 @@ import { useStore } from '../store/useStore';
 import { Card, Divider, SectionHeader } from '../components/UI';
 import RecentTransactionsWidget from '../components/RecentTransactionsWidget';
 import AccountActionsWidget from '../components/AccountActionsWidget';
-import { Colors, Spacing, Radius, Shadow } from '../utils/theme';
+import { useColors, Colors, Spacing, Radius, Shadow } from '../utils/theme';
 import { useTranslation } from '../hooks/useTranslation';
 import { formatRateTimestamp } from '../services/exchangeService';
 
@@ -21,9 +21,18 @@ if (Platform.OS === 'android') {
 
 // ── Döviz kur renkleri ────────────────────────────────────────────────────────
 const RATE_CONFIG = {
-  USD: { flag: '🇺🇸', nameTR: 'Amerikan Doları',  nameEN: 'US Dollar',      colors: ['#1E1B4B', '#2D2A6E'] as [string,string] },
-  EUR: { flag: '🇪🇺', nameTR: 'Euro',              nameEN: 'Euro',           colors: ['#064E3B', '#065F46'] as [string,string] },
-  GBP: { flag: '🇬🇧', nameTR: 'İngiliz Sterlini', nameEN: 'British Pound',  colors: ['#451A03', '#78350F'] as [string,string] },
+  USD: { flag: '🇺🇸', nameTR: 'Amerikan Doları',  nameEN: 'US Dollar',
+    colorsDark:  ['#1E1B4B', '#2D2A6E'] as [string,string],
+    colorsLight: ['#EDE9FE', '#DDD6FE'] as [string,string],
+    textDark: '#fff', textLight: '#3730A3' },
+  EUR: { flag: '🇪🇺', nameTR: 'Euro',              nameEN: 'Euro',
+    colorsDark:  ['#064E3B', '#065F46'] as [string,string],
+    colorsLight: ['#D1FAE5', '#A7F3D0'] as [string,string],
+    textDark: '#fff', textLight: '#065F46' },
+  GBP: { flag: '🇬🇧', nameTR: 'İngiliz Sterlini', nameEN: 'British Pound',
+    colorsDark:  ['#451A03', '#78350F'] as [string,string],
+    colorsLight: ['#FEF3C7', '#FDE68A'] as [string,string],
+    textDark: '#fff', textLight: '#92400E' },
 } as const;
 
 // ── Fiyat listeleri (AddTransactionScreen ile aynı veri) ─────────────────────
@@ -206,6 +215,8 @@ const PRICE_LISTS_EN = [
 
 // ── Genişletilebilir Fiyat Listesi Bileşeni ───────────────────────────────────
 function PriceListSection({ lang }: { lang: string }) {
+  const Colors = useColors();
+  const plStyles = make_plStyles(Colors);
   const [openKey, setOpenKey] = useState<string | null>(null);
   const lists = lang === 'TR' ? PRICE_LISTS_TR : PRICE_LISTS_EN;
   const L = lang === 'TR';
@@ -266,6 +277,8 @@ function PriceListSection({ lang }: { lang: string }) {
 
 // ── Feedback Bileşeni ─────────────────────────────────────────────────────────
 function FeedbackSection({ lang, onSend }: { lang: string; onSend: (msg: string) => Promise<void> }) {
+  const Colors = useColors();
+  const fbStyles = make_fbStyles(Colors);
   const [text, setText]       = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent]       = useState(false);
@@ -341,8 +354,12 @@ function FeedbackSection({ lang, onSend }: { lang: string; onSend: (msg: string)
 
 // ── Ana Ekran ─────────────────────────────────────────────────────────────────
 export default function SettingsScreen() {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
+  const plStyles = make_plStyles(Colors);
+  const fbStyles = make_fbStyles(Colors);
   const { lang } = useTranslation();
-  const { exchangeRates, ratesMeta, setLang, loadExchangeRates, sendFeedback } = useStore();
+  const { exchangeRates, ratesMeta, setLang, loadExchangeRates, sendFeedback, themeMode, setThemeMode } = useStore();
   const [refreshing, setRefreshing] = useState(false);
   const L = lang === 'TR';
 
@@ -390,6 +407,35 @@ export default function SettingsScreen() {
           </View>
         </Card>
 
+        {/* ── Tema ── */}
+        <Card>
+          <SectionHeader title={L ? '🎨 Tema / Theme' : '🎨 Theme'} />
+          <View style={styles.langRow}>
+            <TouchableOpacity
+              style={[styles.themeBtn, themeMode === 'dark' && styles.themeBtnActiveDark]}
+              onPress={() => setThemeMode('dark')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.themeIcon}>🌙</Text>
+              <Text style={[styles.themeBtnText, themeMode === 'dark' && styles.themeBtnTextActive]}>
+                {L ? 'Koyu' : 'Dark'}
+              </Text>
+              {themeMode === 'dark' && <Text style={styles.langBtnCheck}>✓</Text>}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.themeBtn, themeMode === 'light' && styles.themeBtnActiveLight]}
+              onPress={() => setThemeMode('light')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.themeIcon}>☀️</Text>
+              <Text style={[styles.themeBtnText, themeMode === 'light' && { color: '#1A1040', fontWeight: '700' }]}>
+                {L ? 'Açık' : 'Light'}
+              </Text>
+              {themeMode === 'light' && <Text style={{ fontSize: 14, color: '#1A1040', fontWeight: '900' }}>✓</Text>}
+            </TouchableOpacity>
+          </View>
+        </Card>
+
         {/* ── Döviz Kurları ── */}
         <View style={styles.ratesCard}>
           <View style={styles.ratesHeader}>
@@ -427,21 +473,21 @@ export default function SettingsScreen() {
               const cfg   = RATE_CONFIG[cur];
               const value = exchangeRates[cur];
               return (
-                <LinearGradient key={cur} colors={cfg.colors} style={styles.rateCard}>
-                  <Text style={styles.rateFlag}>{cfg.flag}</Text>
-                  <Text style={styles.rateCur}>{cur}</Text>
-                  <Text style={styles.rateCurName} numberOfLines={2}>
+                <LinearGradient key={cur} colors={themeMode === "light" ? cfg.colorsLight : cfg.colorsDark} style={styles.rateCard}>
+                  <Text style={[styles.rateFlag]}>{cfg.flag}</Text>
+                  <Text style={[styles.rateCur, {color: themeMode==="light" ? cfg.textLight : "#fff"}]}>{cur}</Text>
+                  <Text style={[styles.rateCurName, {color: themeMode==="light" ? cfg.textLight : "rgba(255,255,255,0.7)"}]} numberOfLines={2}>
                     {L ? cfg.nameTR : cfg.nameEN}
                   </Text>
                   <View style={styles.rateValueRow}>
-                    <Text style={styles.rateValue}>
+                    <Text style={[styles.rateValue, {color: themeMode==="light" ? cfg.textLight : "#fff"}]}>
                       {value
                         ? value.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                         : '—'}
                     </Text>
-                    <Text style={styles.rateTLLabel}>₺</Text>
+                    <Text style={[styles.rateTLLabel, {color: themeMode==="light" ? cfg.textLight : "rgba(255,255,255,0.8)"}]}>₺</Text>
                   </View>
-                  <Text style={styles.ratePerLabel}>1 {cur} =</Text>
+                  <Text style={[styles.ratePerLabel, {color: themeMode==="light" ? cfg.textLight : "rgba(255,255,255,0.6)"}]}>1 {cur} =</Text>
                 </LinearGradient>
               );
             })}
@@ -468,28 +514,32 @@ export default function SettingsScreen() {
       </ScrollView>
     </SafeAreaView>
   );
-}
-
-// ── Ana Stiller ───────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  safe:      { flex: 1, backgroundColor: Colors.bg },
+}const make_styles = (C: any) => StyleSheet.create({
+  safe:      { flex: 1, backgroundColor: C.bg },
   scroll:    { flex: 1, padding: Spacing.lg },
-  pageTitle: { fontSize: 24, fontWeight: '900', color: Colors.text, marginBottom: Spacing.lg },
+  pageTitle: { fontSize: 24, fontWeight: '900', color: C.text, marginBottom: Spacing.lg },
 
   langRow:           { flexDirection: 'row', gap: Spacing.sm },
-  langBtn:           { flex: 1, paddingVertical: 14, borderRadius: Radius.md, backgroundColor: Colors.bgElevated, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 },
-  langBtnActive:     { backgroundColor: Colors.primary },
+  langBtn:           { flex: 1, paddingVertical: 14, borderRadius: Radius.md, backgroundColor: C.bgElevated, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 },
+  langBtnActive:     { backgroundColor: C.primary },
   langBtnFlag:       { fontSize: 18 },
-  langBtnText:       { fontSize: 14, fontWeight: '700', color: Colors.textMuted },
+  langBtnText:       { fontSize: 14, fontWeight: '700', color: C.textMuted },
   langBtnTextActive: { color: '#fff' },
   langBtnCheck:      { fontSize: 14, color: '#fff', fontWeight: '900' },
 
-  ratesCard:      { backgroundColor: Colors.card, borderRadius: Radius.xl, padding: Spacing.lg, marginBottom: Spacing.sm, ...Shadow.sm },
+  themeBtn:            { flex: 1, paddingVertical: 14, borderRadius: Radius.md, backgroundColor: C.bgElevated, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6, borderWidth: 1.5, borderColor: 'transparent' },
+  themeBtnActiveDark:  { backgroundColor: '#1A1040', borderColor: C.primary },
+  themeBtnActiveLight: { backgroundColor: '#EEF0FF', borderColor: '#7C6EFA' },
+  themeIcon:           { fontSize: 18 },
+  themeBtnText:        { fontSize: 14, fontWeight: '700', color: C.textMuted },
+  themeBtnTextActive:  { color: '#fff' },
+
+  ratesCard:      { backgroundColor: C.card, borderRadius: Radius.xl, padding: Spacing.lg, marginBottom: Spacing.sm, ...Shadow.sm },
   ratesHeader:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: Spacing.md },
-  ratesTitle:     { fontSize: 16, fontWeight: '800', color: Colors.text },
-  ratesSubtitle:  { fontSize: 11, color: Colors.textMuted, marginTop: 3 },
-  ratesSource:    { fontSize: 10, color: Colors.textLight, marginTop: 1 },
-  refreshBtn:     { backgroundColor: Colors.primary, borderRadius: Radius.md, paddingHorizontal: 14, paddingVertical: 10, ...Shadow.md },
+  ratesTitle:     { fontSize: 16, fontWeight: '800', color: C.text },
+  ratesSubtitle:  { fontSize: 11, color: C.textMuted, marginTop: 3 },
+  ratesSource:    { fontSize: 10, color: C.textLight, marginTop: 1 },
+  refreshBtn:     { backgroundColor: C.primary, borderRadius: Radius.md, paddingHorizontal: 14, paddingVertical: 10, ...Shadow.md },
   refreshBtnText: { fontSize: 13, fontWeight: '800', color: '#fff' },
   rateCardsRow:   { flexDirection: 'row', gap: 8, marginBottom: Spacing.md },
   rateCard:       { flex: 1, borderRadius: Radius.lg, padding: 12, alignItems: 'center' },
@@ -501,41 +551,41 @@ const styles = StyleSheet.create({
   rateTLLabel:    { fontSize: 12, color: 'rgba(255,255,255,0.8)', fontWeight: '700', marginBottom: 2 },
   ratePerLabel:   { fontSize: 9, color: 'rgba(255,255,255,0.6)', marginTop: 2 },
   converterHint:     { backgroundColor: 'rgba(124,110,250,0.1)', borderRadius: Radius.md, padding: Spacing.sm, borderWidth: 1, borderColor: 'rgba(124,110,250,0.2)' },
-  converterHintText: { fontSize: 11, color: Colors.primary, fontWeight: '600', lineHeight: 16 },
+  converterHintText: { fontSize: 11, color: C.primary, fontWeight: '600', lineHeight: 16 },
 });
 
 // ── Fiyat Listesi Stilleri ────────────────────────────────────────────────────
-const plStyles = StyleSheet.create({
-  container:    { backgroundColor: Colors.card, borderRadius: Radius.xl, padding: Spacing.lg, marginBottom: Spacing.sm, ...Shadow.sm },
-  sectionTitle: { fontSize: 16, fontWeight: '800', color: Colors.text, marginBottom: 4 },
-  sectionHint:  { fontSize: 11, color: Colors.textMuted, marginBottom: Spacing.md, lineHeight: 16 },
-  group:        { borderRadius: Radius.lg, overflow: 'hidden', marginBottom: 8, borderWidth: 1, borderColor: Colors.border },
-  groupHeader:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: Spacing.md, backgroundColor: Colors.bgElevated },
+const make_plStyles = (C: any) => StyleSheet.create({
+  container:    { backgroundColor: C.card, borderRadius: Radius.xl, padding: Spacing.lg, marginBottom: Spacing.sm, ...Shadow.sm },
+  sectionTitle: { fontSize: 16, fontWeight: '800', color: C.text, marginBottom: 4 },
+  sectionHint:  { fontSize: 11, color: C.textMuted, marginBottom: Spacing.md, lineHeight: 16 },
+  group:        { borderRadius: Radius.lg, overflow: 'hidden', marginBottom: 8, borderWidth: 1, borderColor: C.border },
+  groupHeader:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: Spacing.md, backgroundColor: C.bgElevated },
   groupLeft:    { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
   groupIcon:    { fontSize: 20 },
-  groupLabel:   { fontSize: 14, fontWeight: '700', color: Colors.text },
-  countBadge:   { backgroundColor: Colors.primary, borderRadius: 10, paddingHorizontal: 7, paddingVertical: 2 },
+  groupLabel:   { fontSize: 14, fontWeight: '700', color: C.text },
+  countBadge:   { backgroundColor: C.primary, borderRadius: 10, paddingHorizontal: 7, paddingVertical: 2 },
   countBadgeText: { fontSize: 10, fontWeight: '800', color: '#fff' },
-  arrow:        { fontSize: 20, color: Colors.textMuted, fontWeight: '700', transform: [{ rotate: '0deg' }] },
+  arrow:        { fontSize: 20, color: C.textMuted, fontWeight: '700', transform: [{ rotate: '0deg' }] },
   arrowOpen:    { transform: [{ rotate: '90deg' }] },
-  itemList:     { backgroundColor: Colors.bgCard },
-  item:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.md, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: Colors.border },
-  itemName:     { fontSize: 13, color: Colors.text, fontWeight: '500', flex: 1 },
-  itemPrice:    { fontSize: 13, fontWeight: '800', color: Colors.primary },
+  itemList:     { backgroundColor: C.bgCard },
+  item:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.md, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: C.border },
+  itemName:     { fontSize: 13, color: C.text, fontWeight: '500', flex: 1 },
+  itemPrice:    { fontSize: 13, fontWeight: '800', color: C.primary },
 });
 
 // ── Feedback Stilleri ─────────────────────────────────────────────────────────
-const fbStyles = StyleSheet.create({
-  container: { backgroundColor: Colors.card, borderRadius: Radius.xl, padding: Spacing.lg, marginBottom: Spacing.sm, ...Shadow.sm },
-  title:     { fontSize: 16, fontWeight: '800', color: Colors.text, marginBottom: 4 },
-  hint:      { fontSize: 11, color: Colors.textMuted, marginBottom: Spacing.md, lineHeight: 16 },
+const make_fbStyles = (C: any) => StyleSheet.create({
+  container: { backgroundColor: C.card, borderRadius: Radius.xl, padding: Spacing.lg, marginBottom: Spacing.sm, ...Shadow.sm },
+  title:     { fontSize: 16, fontWeight: '800', color: C.text, marginBottom: 4 },
+  hint:      { fontSize: 11, color: C.textMuted, marginBottom: Spacing.md, lineHeight: 16 },
   input:     {
-    borderWidth: 1.5, borderColor: Colors.border, borderRadius: Radius.lg,
-    padding: Spacing.md, fontSize: 14, color: Colors.text,
-    minHeight: 100, backgroundColor: Colors.bgInput, marginBottom: Spacing.md,
+    borderWidth: 1.5, borderColor: C.border, borderRadius: Radius.lg,
+    padding: Spacing.md, fontSize: 14, color: C.text,
+    minHeight: 100, backgroundColor: C.bgInput, marginBottom: Spacing.md,
   },
-  sendBtn:     { backgroundColor: Colors.primary, borderRadius: Radius.lg, paddingVertical: 14, alignItems: 'center', ...Shadow.md },
+  sendBtn:     { backgroundColor: C.primary, borderRadius: Radius.lg, paddingVertical: 14, alignItems: 'center', ...Shadow.md },
   sendBtnText: { color: '#fff', fontSize: 14, fontWeight: '800' },
   sentBox:     { backgroundColor: 'rgba(52,211,153,0.15)', borderRadius: Radius.lg, paddingVertical: 14, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(52,211,153,0.3)' },
-  sentText:    { fontSize: 14, fontWeight: '800', color: Colors.success },
+  sentText:    { fontSize: 14, fontWeight: '800', color: C.success },
 });

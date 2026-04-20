@@ -5,9 +5,11 @@ import {
 } from 'react-native';
 import { useStore } from '../store/useStore';
 import { UserAPI } from '../services/api';
-import { Colors, Radius, Shadow } from '../utils/theme';
+import {useColors,  Colors, Radius, Shadow } from '../utils/theme';
 
 export default function BottomActionsWidget({ lang }: { lang: string }) {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   const { logout } = useStore();
   const [feedback, setFeedback] = useState('');
   const [loading,  setLoading]  = useState(false);
@@ -91,13 +93,13 @@ export default function BottomActionsWidget({ lang }: { lang: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const make_styles = (C: any) => StyleSheet.create({
   container:      { marginBottom: 16 },
   feedbackBtn:    { backgroundColor: '#EEF2FF', borderRadius: 12, padding: 14, alignItems: 'center', marginBottom: 8 },
-  feedbackBtnText:{ fontSize: 14, fontWeight: '700', color: Colors.primary },
+  feedbackBtnText:{ fontSize: 14, fontWeight: '700', color: C.primary },
   feedbackBox:    { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 8, ...Shadow.sm },
-  input:          { backgroundColor: '#F8F9FF', borderWidth: 1.5, borderColor: '#E2E8F0', borderRadius: 10, padding: 12, fontSize: 14, color: Colors.text, minHeight: 80, textAlignVertical: 'top', marginBottom: 10 },
-  sendBtn:        { backgroundColor: Colors.primary, borderRadius: 10, padding: 14, alignItems: 'center' },
+  input:          { backgroundColor: '#F8F9FF', borderWidth: 1.5, borderColor: '#E2E8F0', borderRadius: 10, padding: 12, fontSize: 14, color: C.text, minHeight: 80, textAlignVertical: 'top', marginBottom: 10 },
+  sendBtn:        { backgroundColor: C.primary, borderRadius: 10, padding: 14, alignItems: 'center' },
   sendBtnText:    { color: '#fff', fontSize: 14, fontWeight: '700' },
   logoutBtn:      { backgroundColor: '#FEE2E2', borderRadius: 12, padding: 14, alignItems: 'center' },
   logoutText:     { fontSize: 14, fontWeight: '700', color: '#991B1B' },

@@ -12,10 +12,13 @@ import { SyncBanner } from '../components/UI';
 import TrendAlerts from '../components/TrendAlerts';
 import RecentTransactionsWidget from '../components/RecentTransactionsWidget';
 import AccountActionsWidget from '../components/AccountActionsWidget';
-import { Colors, Spacing, Radius, Shadow } from '../utils/theme';
+import { useColors, Colors, Spacing, Radius, Shadow } from '../utils/theme';
 import { useTranslation } from '../hooks/useTranslation';
 
 export default function HomeScreen() {
+  const Colors = useColors();
+  const themeMode = useStore(s => s.themeMode);
+  const styles = make_styles(Colors);
   const { t, lang } = useTranslation();
   const navigation   = useNavigation<any>();
   const { analytics, trends, syncState, loadTransactions, loadExchangeRates } = useStore();
@@ -80,7 +83,7 @@ export default function HomeScreen() {
             {/* ── Gelir / Gider kartları ── */}
             <View style={styles.metricsRow}>
               {/* Gelir */}
-              <LinearGradient colors={['#064E3B','#065F46']} style={styles.metricCard}>
+              <LinearGradient colors={themeMode === 'light' ? ['#D1FAE5','#A7F3D0'] : ['#064E3B','#065F46']} style={styles.metricCard}>
                 <View style={styles.metricIconBox}>
                   <Text style={{ fontSize: 20 }}>💰</Text>
                 </View>
@@ -91,7 +94,7 @@ export default function HomeScreen() {
               </LinearGradient>
 
               {/* Gider */}
-              <LinearGradient colors={['#450A0A','#7F1D1D']} style={styles.metricCard}>
+              <LinearGradient colors={themeMode === 'light' ? ['#FFE4E6','#FECDD3'] : ['#450A0A','#7F1D1D']} style={styles.metricCard}>
                 <View style={styles.metricIconBox}>
                   <Text style={{ fontSize: 20 }}>💸</Text>
                 </View>
@@ -106,20 +109,20 @@ export default function HomeScreen() {
             <View style={styles.metricsRow}>
               {/* Net */}
               <LinearGradient
-                colors={net >= 0 ? ['#1E1B4B','#312E81'] : ['#450A0A','#7F1D1D']}
+                colors={net >= 0 ? (themeMode === 'light' ? ['#EDE9FE','#DDD6FE'] : ['#1E1B4B','#312E81']) : (themeMode === 'light' ? ['#FFE4E6','#FECDD3'] : ['#450A0A','#7F1D1D'])}
                 style={styles.metricCard}
               >
                 <View style={styles.metricIconBox}>
                   <Text style={{ fontSize: 20 }}>{net >= 0 ? '📈' : '📉'}</Text>
                 </View>
-                <Text style={styles.metricLabel}>NET</Text>
+                <Text style={[styles.metricLabel, themeMode==='light' && {color: net>=0 ? '#3730A3' : '#7F1D1D'}]}>NET</Text>
                 <Text style={[styles.metricValue, { color: net >= 0 ? Colors.primary : Colors.danger }]}>
                   {net >= 0 ? '+' : ''}{net.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}₺
                 </Text>
               </LinearGradient>
 
               {/* Skor */}
-              <LinearGradient colors={['#1C1C2E','#242438']} style={[styles.metricCard, { alignItems: 'center' }]}>
+              <LinearGradient colors={[Colors.bgCard, Colors.bgElevated]} style={[styles.metricCard, { alignItems: 'center' }]}>
                 <Text style={styles.metricLabel}>{L ? 'FİN. SKOR' : 'FIN. SCORE'}</Text>
                 <Text style={[styles.scoreNum, { color: scoreColor }]}>{score}</Text>
                 <View style={[styles.scoreBadge, { borderColor: scoreColor }]}>
@@ -181,8 +184,8 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe:   { flex: 1, backgroundColor: Colors.bg },
+const make_styles = (C: any) => StyleSheet.create({
+  safe:   { flex: 1, backgroundColor: C.bg },
   scroll: { flex: 1, paddingHorizontal: Spacing.lg },
 
   // ── Header ──────────────────────────────────────────────────────────────
@@ -192,15 +195,15 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.lg, marginBottom: Spacing.lg,
   },
   headerTitle: {
-    fontSize: 28, fontWeight: '900', color: Colors.primary,
+    fontSize: 28, fontWeight: '900', color: C.primary,
     letterSpacing: -0.5,
   },
-  headerSub: { fontSize: 13, color: Colors.textMuted, marginTop: 2 },
+  headerSub: { fontSize: 13, color: C.textMuted, marginTop: 2 },
   accountBtn: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: Colors.bgElevated,
+    backgroundColor: C.bgElevated,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: Colors.border,
+    borderWidth: 1, borderColor: C.border,
     ...Shadow.sm,
   },
 
@@ -208,12 +211,12 @@ const styles = StyleSheet.create({
   metricsRow:   { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.sm },
   metricCard: {
     flex: 1, borderRadius: Radius.lg, padding: Spacing.md,
-    borderWidth: 1, borderColor: Colors.border,
+    borderWidth: 1, borderColor: C.border,
     ...Shadow.sm,
   },
   metricIconBox: { marginBottom: 6 },
   metricLabel: {
-    fontSize: 10, fontWeight: '700', color: Colors.textMuted,
+    fontSize: 10, fontWeight: '700', color: C.textMuted,
     textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4,
   },
   metricValue: { fontSize: 20, fontWeight: '900', letterSpacing: -0.5 },
@@ -225,14 +228,14 @@ const styles = StyleSheet.create({
 
   // ── Progress ─────────────────────────────────────────────────────────────
   progressCard: {
-    backgroundColor: Colors.bgCard, borderRadius: Radius.lg,
+    backgroundColor: C.bgCard, borderRadius: Radius.lg,
     padding: Spacing.md, marginBottom: Spacing.sm,
-    borderWidth: 1, borderColor: Colors.border,
+    borderWidth: 1, borderColor: C.border,
   },
   progressLabelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  progressLabel:    { fontSize: 13, color: Colors.textMuted, fontWeight: '600' },
+  progressLabel:    { fontSize: 13, color: C.textMuted, fontWeight: '600' },
   progressPct:      { fontSize: 14, fontWeight: '800' },
-  progressTrack:    { height: 8, backgroundColor: Colors.bgElevated, borderRadius: 4, overflow: 'hidden' },
+  progressTrack:    { height: 8, backgroundColor: C.bgElevated, borderRadius: 4, overflow: 'hidden' },
   progressFill:     { height: 8, borderRadius: 4 },
 
   // ── Hızlı ekle ───────────────────────────────────────────────────────────
@@ -244,6 +247,6 @@ const styles = StyleSheet.create({
   },
   quickIncome:  { backgroundColor: 'rgba(52,211,153,0.08)', borderColor: 'rgba(52,211,153,0.3)' },
   quickExpense: { backgroundColor: 'rgba(248,113,113,0.08)', borderColor: 'rgba(248,113,113,0.3)' },
-  quickBtnIcon: { fontSize: 18, fontWeight: '700', color: Colors.textMuted },
+  quickBtnIcon: { fontSize: 18, fontWeight: '700', color: C.textMuted },
   quickBtnText: { fontSize: 13, fontWeight: '700' },
 });

@@ -5,9 +5,11 @@ import {
   Alert, TextInput, ActivityIndicator,
 } from 'react-native';
 import { useStore } from '../store/useStore';
-import { Colors, Radius, Shadow, Spacing } from '../utils/theme';
+import {useColors,  Colors, Radius, Shadow, Spacing } from '../utils/theme';
 
 export default function AccountActionsWidget({ lang }: { lang: string }) {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   const { logout, sendFeedback } = useStore();
   const [feedback, setFeedback] = useState('');
   const [loading,  setLoading]  = useState(false);
@@ -103,7 +105,7 @@ export default function AccountActionsWidget({ lang }: { lang: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const make_styles = (C: any) => StyleSheet.create({
   container: { marginBottom: Spacing.lg },
   row:       { flexDirection: 'row', gap: 10 },
 
@@ -112,28 +114,28 @@ const styles = StyleSheet.create({
     borderRadius: Radius.lg, paddingVertical: 13, alignItems: 'center',
     borderWidth: 1.5, borderColor: 'rgba(124,110,250,0.3)',
   },
-  feedbackBtnOpen: { backgroundColor: 'rgba(124,110,250,0.2)', borderColor: Colors.primary },
-  feedbackBtnText: { fontSize: 13, fontWeight: '700', color: Colors.primary },
+  feedbackBtnOpen: { backgroundColor: 'rgba(124,110,250,0.2)', borderColor: C.primary },
+  feedbackBtnText: { fontSize: 13, fontWeight: '700', color: C.primary },
 
   logoutBtn: {
-    flex: 1, backgroundColor: 'rgba(248,113,113,0.1)',
+    flex: 1, backgroundColor: C.bgCard,
     borderRadius: Radius.lg, paddingVertical: 13, alignItems: 'center',
-    borderWidth: 1.5, borderColor: 'rgba(248,113,113,0.3)',
+    borderWidth: 1.5, borderColor: C.danger,
   },
-  logoutText: { fontSize: 13, fontWeight: '700', color: Colors.danger },
+  logoutText: { fontSize: 13, fontWeight: '700', color: C.danger },
 
   feedbackBox: {
-    marginTop: 10, backgroundColor: Colors.bgElevated,
+    marginTop: 10, backgroundColor: C.bgElevated,
     borderRadius: Radius.lg, padding: Spacing.md,
-    borderWidth: 1, borderColor: Colors.border,
+    borderWidth: 1, borderColor: C.border,
   },
   input: {
-    backgroundColor: Colors.bgInput, borderWidth: 1.5, borderColor: Colors.border,
+    backgroundColor: C.bgInput, borderWidth: 1.5, borderColor: C.border,
     borderRadius: Radius.md, paddingHorizontal: 12, paddingVertical: 10,
     fontSize: 14, minHeight: 72, textAlignVertical: 'top', marginBottom: 10,
   },
-  sendBtn:     { backgroundColor: Colors.primary, borderRadius: Radius.md, paddingVertical: 12, alignItems: 'center' },
+  sendBtn:     { backgroundColor: C.primary, borderRadius: Radius.md, paddingVertical: 12, alignItems: 'center' },
   sendBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
   sentBox:     { backgroundColor: 'rgba(52,211,153,0.15)', borderRadius: Radius.md, paddingVertical: 14, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(52,211,153,0.3)' },
-  sentText:    { fontSize: 14, fontWeight: '800', color: Colors.success },
+  sentText:    { fontSize: 14, fontWeight: '800', color: C.success },
 });

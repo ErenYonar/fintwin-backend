@@ -7,7 +7,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useStore, restoreSession } from '../store/useStore';
-import { Colors } from '../utils/theme';
+import { useColors, Colors } from '../utils/theme';
 
 import LoginScreen          from '../screens/LoginScreen';
 import OTPScreen            from '../screens/OTPScreen';
@@ -33,8 +33,8 @@ function MainTabs() {
         tabBarActiveTintColor:   Colors.primary,
         tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {
-          backgroundColor: '#0F0F1A',
-          borderTopColor: '#1A1A2E',
+          backgroundColor: Colors.bg,
+          borderTopColor: Colors.border,
           borderTopWidth: 1,
           paddingBottom: 5,
           height: 62,
@@ -94,6 +94,7 @@ function AppStack() {
 }
 
 export default function AppNavigator() {
+  const Colors = useColors();
   // isLoggedIn state'ini doğrudan store'dan takip et
   // Bu sayede logout() çağrılınca isLoggedIn false olur → otomatik AuthStack'e geçer
   const isLoggedIn = useStore(s => s.isLoggedIn);

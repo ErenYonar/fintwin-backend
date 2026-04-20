@@ -9,7 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { Button, Input, Card } from '../components/UI';
-import { Colors, Spacing, Radius, Shadow } from '../utils/theme';
+import { useColors, Colors, Spacing, Radius, Shadow } from '../utils/theme';
 import { useTranslation, MESLEK_EN_TO_TR, GICS_EN_TO_TR, CINSIYET_EN_TO_TR } from '../hooks/useTranslation';
 import { AuthAPI } from '../services/api';
 
@@ -95,53 +95,57 @@ const CINSIYETLER_TR = ['Kadın','Erkek','Belirtmek İstemiyorum'];
 const CINSIYETLER_EN = ['Female','Male','Prefer not to say'];
 
 const KVKK_TR = [
-  { baslik: '🔐 FinTwin KVKK Aydınlatma Metni', icerik: 'Son Güncelleme: Ocak 2025 | Sürüm 2.0\n\nVeri Sorumlusu: FinTwin Kişisel Finans Uygulaması\nİletişim: privacy@fintwin.app\nHukuki Dayanak: 6698 Sayılı KVKK Madde 10 — Veri Sorumlusunun Aydınlatma Yükümlülüğü' },
-  { baslik: '📱 Bölüm 1: Toplanan Veriler', icerik: '• E-posta adresi (SHA-256 hash olarak işlenir, orijinal saklanmaz)\n• Demografik bilgiler (yaş, cinsiyet, şehir, meslek, sektör)\n• Finansal işlem verileri (kategoriler, tutarlar, tarihler)\n• Cihaz tipi ve OS (yalnızca arayüz optimizasyonu için)\n• Şehir düzeyinde konum (gönüllü olarak, kayıt sırasında)' },
-  { baslik: '🔒 Bölüm 2: Veri Güvenliği (KVKK Md. 12)', icerik: '• E-postanız SHA-256 ile şifrelenir; orijinal adres hiçbir zaman saklanmaz\n• Tüm finansal veriler cihazınızda şifreli JSON formatında saklanır\n• OTP kodları 6 haneli, 5 dakika geçerli ve tek kullanımlıktır\n• Şifresiz giriş sistemi ile kimlik bilgisi hırsızlığı riski sıfırlanır\n• Tüm iletişim TLS 1.3 şifreleme ile korunur' },
-  { baslik: '⚖️ Bölüm 3: Hukuki Dayanak (KVKK Md. 5)', icerik: '• Açık Rıza (Md. 5/1): Kayıt, demografik veri, OTP doğrulama\n• Sözleşmenin İfası (Md. 5/2-c): Finans takip hizmetinin sunulması\n• Meşru Menfaat (Md. 5/2-f): Güvenlik ve hizmet geliştirme\n• Kanuni Yükümlülük (Md. 5/2-ç): Yasal zorunluluk halinde bildirim' },
-  { baslik: '🌍 Bölüm 4: Üçüncü Taraflar', icerik: 'FinTwin, kişisel verilerinizi ticari amaçlarla SATMAZ, kiralamaz veya paylaşmaz.\n\nSınırlı paylaşım:\n• SMTP sağlayıcısı: Yalnızca OTP iletimi için\n• Döviz kuru API\'leri: Anonim istekler, kişisel veri iletilmez\n• Yasal zorunluluk: Mahkeme kararı veya düzenleyici kurum talebi' },
-  { baslik: '📅 Bölüm 5: Saklama Süreleri (KVKK Md. 7)', icerik: '• Aktif hesap: Hesabınız var olduğu sürece\n• Hesap silme sonrası: Tüm veriler 24 saat içinde kalıcı olarak silinir\n• OTP kodları: Oluşturulmasından 5 dakika sonra otomatik silinir' },
-  { baslik: '✅ Bölüm 6: Haklarınız (KVKK Md. 11)', icerik: '• Bilgi Talep: Hakkınızda işlenen verilerin kopyasını talep edebilirsiniz\n• Düzeltme: Hatalı verileri Hesap Ayarları\'ndan güncelleyebilirsiniz\n• Silme: Ayarlar → Hesabı Sil ile tüm verilerinizi silebilirsiniz\n• Veri Taşınabilirliği: JSON formatında veri talep edebilirsiniz\n• Rızayı Geri Alma: İstediğiniz zaman onayınızı geri alabilirsiniz\n• Şikayet: Kişisel Verileri Koruma Kurumu\'na başvurabilirsiniz\n\n📧 privacy@fintwin.app | En geç 30 gün içinde yanıt verilir' },
+  { baslik: '🔐 1. Veri Sorumlusu ve Gizlilik Taahhüdü', icerik: 'FinTwin ("Uygulama"), kullanıcı gizliliğini temel alan bir mimariyle geliştirilmiştir. Uygulama, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") ve ilgili mevzuata tam uyum sağlamayı taahhüt eder.\n\nFinTwin, e-posta adresinizi sisteme girdiği anda SHA-256 kriptografik hash yöntemiyle maskeler; bu sayede gerçek kimliğiniz sunucularımızda hiçbir zaman "açık veri" olarak yer almaz.' },
+  { baslik: '📋 2. İşlenen Kişisel Veriler', icerik: 'Uygulamayı kullanırken aşağıdaki verileriniz, tamamen gönüllülük esasına dayalı olarak toplanmaktadır:\n\n• Kimlik ve İletişim: E-posta adresinin kriptografik özeti (hash), yaş aralığı, cinsiyet beyanı.\n• Mesleki Bilgiler: Meslek grubu ve sektör (GICS L3 standardında).\n• Finansal Veriler: Gelir kaynakları, harcama kalemleri, bütçe kayıtları ve finansal skor sonuçları.\n• Teknik ve Güvenlik: OTP doğrulama kayıtları, cihaz modeli, işletim sistemi versiyonu ve uygulama içi kullanım logları.' },
+  { baslik: '⚖️ 3. Veri İşleme Amaçları ve Hukuki Sebepler', icerik: 'Verileriniz; KVKK Madde 5/2 kapsamında "bir sözleşmenin kurulması veya ifası" ve "veri sorumlusunun meşru menfaatleri" hukuki sebeplerine dayanarak şu amaçlarla işlenir:\n\n• Kişiselleştirilmiş finansal analiz ve "Finansal Koç" tavsiyeleri sunmak.\n• Kullanıcının harcama alışkanlıklarına göre finansal skor hesaplaması yapmak.\n• E-posta doğrulaması yoluyla hesap güvenliğini sağlamak.\n• Uygulama hatalarını tespit etmek ve kullanıcı arayüzünü optimize etmek.' },
+  { baslik: '🌍 4. Veri Aktarımı ve Üçüncü Taraflar', icerik: 'FinTwin, verilerinizi ticari amaçlarla üçüncü şahıslara kesinlikle satmaz veya kiralamaz. Veri aktarımı sadece şu sınırlı durumlarda gerçekleşir:\n\n• Hizmet Sağlayıcılar: OTP kodlarının iletimi için kullanılan e-posta servis sağlayıcıları.\n• Yasal Zorunluluk: Yetkili adli veya idari merciler tarafından usulüne uygun bir talep gelmesi halinde.' },
+  { baslik: '⚠️ 5. Hukuki Sorumluluk Reddi', icerik: '• Yatırım Tavsiyesi Değildir: Uygulama tarafından üretilen skorlar, analizler ve "Koç" önerileri tamamen algoritmik olup; 6362 sayılı Sermaye Piyasası Kanunu kapsamında yatırım danışmanlığı teşkil etmez.\n\n• Bağlayıcılık: Kullanıcı, uygulamadaki verilere dayanarak aldığı finansal kararların tüm sorumluluğunun kendisine ait olduğunu kabul eder. FinTwin, hatalı veri girişi veya piyasa dalgalanmaları nedeniyle oluşabilecek hiçbir maddi zarardan sorumlu tutulamaz.' },
+  { baslik: '🗑️ 6. Veri Saklama ve Unutulma Hakkı', icerik: 'Kişisel verileriniz, üyeliğiniz süresince saklanır. Ayarlar bölümünden "Hesabı Sil" komutu verildiğinde; finansal kayıtlarınız, demografik bilgileriniz ve e-posta hash kayıtlarınız 24 saat içerisinde sunucularımızdan kalıcı, geri döndürülemez ve fiziksel olarak silinir.' },
+  { baslik: '✅ 7. İlgili Kişinin Hakları ve İletişim', icerik: 'KVKK Madde 11 uyarınca verileriniz hakkında bilgi alma, düzeltme ve silme haklarına sahipsiniz.\n\n📧 Talepleriniz için: fintwin@gmail.com' },
 ];
 
 const KVKK_EN = [
-  { baslik: '🔐 FinTwin Privacy Notice & GDPR/KVKK Disclosure', icerik: 'Last Updated: January 2025 | Version 2.0\n\nData Controller: FinTwin Personal Finance Application\nContact: privacy@fintwin.app\nLegal Basis: GDPR Article 6(1)(a) — Consent | KVKK Article 5/1' },
-  { baslik: '📱 Section 1: Data We Collect', icerik: '• Email address (processed as SHA-256 hash, original never stored)\n• Demographic info (age, gender, city, profession, sector)\n• Financial transaction data (categories, amounts, dates)\n• Device type and OS (for UI optimization only)\n• City-level location (voluntarily provided at registration)' },
-  { baslik: '🔒 Section 2: Data Security (GDPR Art. 32)', icerik: '• Your email is hashed with SHA-256; original address never stored\n• All financial data stored locally in encrypted JSON format\n• OTP codes are 6-digit, valid 5 minutes, single-use only\n• Password-free login eliminates credential theft risk\n• All communication protected by TLS 1.3 encryption' },
-  { baslik: '⚖️ Section 3: Legal Basis (GDPR Art. 6 / KVKK Art. 5)', icerik: '• Consent (Art. 6(1)(a)): Registration, demographic data, OTP\n• Contract Performance (Art. 6(1)(b)): Providing the finance service\n• Legitimate Interest (Art. 6(1)(f)): Security and improvement\n• Legal Obligation (Art. 6(1)(c)): Notification when required by law' },
-  { baslik: '🌍 Section 4: Third Parties', icerik: 'FinTwin does NOT sell, rent, or share your personal data.\n\nLimited sharing:\n• SMTP provider: Only for OTP delivery\n• Exchange rate APIs: Anonymous requests, no personal data\n• Legal obligation: Court order or regulatory authority request' },
-  { baslik: '📅 Section 5: Data Retention (GDPR Art. 5(1)(e))', icerik: '• Active account: Retained while your account exists\n• After deletion: All data permanently deleted within 24 hours\n• OTP codes: Automatically purged 5 minutes after creation' },
-  { baslik: '✅ Section 6: Your Rights (GDPR Art. 15-22)', icerik: '• Right to Access: Request a copy of data we process about you\n• Right to Rectification: Update incorrect data in Account Settings\n• Right to Erasure: Delete your account via Settings → Delete Account\n• Data Portability: Request your data in JSON format\n• Withdraw Consent: Withdraw at any time\n• Right to Complain: File with your national Data Protection Authority\n\n📧 privacy@fintwin.app | Response within 30 days as required by GDPR' },
+  { baslik: '🔐 1. Data Controller and Security Standards', icerik: 'FinTwin ("Application") is designed with a "Privacy-by-Design" approach. We process personal data in compliance with global standards, including GDPR and local data protection laws.\n\nUpon registration, your email address is immediately obfuscated using a SHA-256 cryptographic hash, ensuring that your plain-text identity is never stored on our infrastructure.' },
+  { baslik: '📋 2. Categories of Processed Data', icerik: 'By interacting with the app, we collect the following data points provided voluntarily:\n\n• Identity & Contact: Cryptographic hash of the email address, age group, and gender.\n• Professional Data: Occupation and industry (GICS L3 standards).\n• Financial Records: Income sources, expense categories, budget logs, and financial score results.\n• Technical Metadata: OTP verification logs, device model, OS version, and performance diagnostics.' },
+  { baslik: '⚖️ 3. Purposes of Data Processing', icerik: 'Data is processed based on "Contractual Necessity" and "Legitimate Interests" for:\n\n• Providing personalized financial analytics and "Financial Coach" suggestions.\n• Calculating the user\'s Financial Health Score based on input metrics.\n• Ensuring account security via email-based verification (OTP).\n• Debugging and improving overall application performance.' },
+  { baslik: '🌍 4. Data Sharing and Third Parties', icerik: 'FinTwin does not sell or rent your personal or financial data to third parties. Data sharing is limited to:\n\n• Service Providers: SMTP providers used solely for delivering verification emails.\n• Legal Obligations: Disclosure to authorized government or judicial bodies only when required by law.' },
+  { baslik: '⚠️ 5. Comprehensive Legal Disclaimer', icerik: '• Not Financial Advice: All financial scores, "Coach" recommendations, and trend analyses are algorithmic. They do not constitute professional investment, tax, or legal advice.\n\n• No Liability: The user assumes full responsibility for any financial decisions made based on app content. FinTwin is not liable for financial losses, inaccuracies in user-entered data, or market volatility.' },
+  { baslik: '🗑️ 6. Data Retention and Right to be Forgotten', icerik: 'In accordance with global privacy laws, you have full control over your data. Upon selecting "Delete Account" in the settings, all your financial records, demographic data, and your unique hash will be permanently, irreversibly, and physically purged from our systems within 24 hours.' },
+  { baslik: '✅ 7. User Rights and Contact Information', icerik: 'Under data protection regulations, you have the right to access, rectify, or erase your data.\n\n📧 For any inquiries, please contact: fintwin@gmail.com' },
 ];
 
 function Dropdown({ label, options, value, onSelect, placeholder }: {
   label: string; options: string[]; value: string;
   onSelect: (v: string) => void; placeholder?: string;
 }) {
+  const Colors = useColors();
   const [visible, setVisible] = useState(false);
   return (
-    <View style={dd.container}>
-      <Text style={dd.label}>{label}</Text>
-      <TouchableOpacity style={dd.selector} onPress={() => setVisible(true)}>
-        <Text style={[dd.selectorText, !value && { color: Colors.textLight }]}>
-          {value || placeholder || '— Select —'}
+    <View style={{ marginBottom: 14 }}>
+      <Text style={{ fontSize: 13, fontWeight: '600', color: Colors.textMuted, marginBottom: 6 }}>{label}</Text>
+      <TouchableOpacity
+        style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: Colors.bgInput, borderWidth: 1.5, borderColor: Colors.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 13 }}
+        onPress={() => setVisible(true)}
+      >
+        <Text style={{ fontSize: 15, color: value ? Colors.text : Colors.textLight, flex: 1 }}>
+          {value || placeholder || '— Seçin —'}
         </Text>
-        <Text style={dd.arrow}>▼</Text>
+        <Text style={{ fontSize: 11, color: Colors.textMuted }}>▼</Text>
       </TouchableOpacity>
       <Modal visible={visible} transparent animationType="fade">
-        <TouchableOpacity style={dd.overlay} activeOpacity={1} onPress={() => setVisible(false)}>
-          <View style={dd.modal}>
-            <Text style={dd.modalTitle}>{label}</Text>
+        <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 24 }} activeOpacity={1} onPress={() => setVisible(false)}>
+          <View style={{ backgroundColor: Colors.bgCard, borderRadius: 16, maxHeight: 420, overflow: 'hidden', borderWidth: 1, borderColor: Colors.border }}>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: Colors.text, padding: 16, borderBottomWidth: 1, borderBottomColor: Colors.border }}>{label}</Text>
             <FlatList
               data={options}
               keyExtractor={item => item}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={[dd.option, item === value && dd.optionActive]}
+                  style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: Colors.border, backgroundColor: item === value ? 'rgba(99,102,241,0.1)' : 'transparent' }}
                   onPress={() => { onSelect(item); setVisible(false); }}
                 >
-                  <Text style={[dd.optionText, item === value && dd.optionTextActive]}>{item}</Text>
-                  {item === value && <Text style={dd.check}>✓</Text>}
+                  <Text style={{ fontSize: 15, color: item === value ? Colors.primary : Colors.text, fontWeight: item === value ? '700' : '400' }}>{item}</Text>
+                  {item === value && <Text style={{ fontSize: 16, color: Colors.primary }}>✓</Text>}
                 </TouchableOpacity>
               )}
             />
@@ -153,13 +157,14 @@ function Dropdown({ label, options, value, onSelect, placeholder }: {
 }
 
 function KVKKModal({ visible, onClose, lang }: { visible: boolean; onClose: () => void; lang: string }) {
+  const Colors = useColors();
   const sections = lang === 'TR' ? KVKK_TR : KVKK_EN;
   const title    = lang === 'TR' ? '📋 KVKK Aydınlatma Metni' : '📋 Privacy Notice';
   const closeText= lang === 'TR' ? 'Okudum, Kapat' : "I've Read, Close";
   return (
     <Modal visible={visible} transparent animationType="slide">
       <View style={km.overlay}>
-        <View style={km.container}>
+        <View style={[km.container, { backgroundColor: Colors.bg }]}>
           <LinearGradient colors={['#6366F1', '#8B5CF6']} style={km.header}>
             <Text style={km.headerTitle}>{title}</Text>
             <TouchableOpacity onPress={onClose} style={km.closeBtn}>
@@ -168,9 +173,9 @@ function KVKKModal({ visible, onClose, lang }: { visible: boolean; onClose: () =
           </LinearGradient>
           <ScrollView style={km.scroll}>
             {sections.map((s, i) => (
-              <View key={i} style={km.section}>
-                <Text style={km.sectionTitle}>{s.baslik}</Text>
-                <Text style={km.sectionBody}>{s.icerik}</Text>
+              <View key={i} style={[km.section, { backgroundColor: Colors.bgCard, borderColor: Colors.border }]}>
+                <Text style={[km.sectionTitle, { color: Colors.text }]}>{s.baslik}</Text>
+                <Text style={[km.sectionBody, { color: Colors.textMuted }]}>{s.icerik}</Text>
               </View>
             ))}
           </ScrollView>
@@ -184,6 +189,8 @@ function KVKKModal({ visible, onClose, lang }: { visible: boolean; onClose: () =
 }
 
 export default function RegisterScreen() {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   const { lang } = useTranslation();
   const navigation = useNavigation<any>();
   const L = lang === 'TR';
@@ -345,12 +352,12 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const make_styles = (C: any) => StyleSheet.create({
   kvkkRow:         { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16, gap: 10 },
-  checkboxBox:     { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: Colors.border, backgroundColor: Colors.bgElevated, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
-  checkboxChecked: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  kvkkText:        { flex: 1, fontSize: 13, color: Colors.textMuted, lineHeight: 20 },
-  kvkkLink:        { color: Colors.primary, fontWeight: '700', textDecorationLine: 'underline' },
+  checkboxBox:     { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: C.border, backgroundColor: C.bgElevated, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
+  checkboxChecked: { backgroundColor: C.primary, borderColor: C.primary },
+  kvkkText:        { flex: 1, fontSize: 13, color: C.textMuted, lineHeight: 20 },
+  kvkkLink:        { color: C.primary, fontWeight: '700', textDecorationLine: 'underline' },
 });
 
 const dd = StyleSheet.create({

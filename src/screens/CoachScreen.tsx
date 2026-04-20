@@ -6,7 +6,7 @@ import { useStore } from '../store/useStore';
 import { Card, ScoreCard, EmptyState } from '../components/UI';
 import RecentTransactionsWidget from '../components/RecentTransactionsWidget';
 import AccountActionsWidget from '../components/AccountActionsWidget';
-import { Colors, Spacing, Radius } from '../utils/theme';
+import { useColors, Colors, Spacing, Radius } from '../utils/theme';
 import { useTranslation } from '../hooks/useTranslation';
 
 interface Advice { emoji: string; type: 'danger'|'warning'|'success'|'primary'; title: string; text: string; }
@@ -35,6 +35,8 @@ function buildAdvices(analytics: any, transactions: any[], lang: string, meslek:
 }
 
 export default function CoachScreen() {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   const { t, lang } = useTranslation();
   const { analytics, transactions, user } = useStore();
   const meslek = user?.meslek || '';
@@ -85,15 +87,15 @@ export default function CoachScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe:        { flex: 1, backgroundColor: Colors.bg },
+const make_styles = (C: any) => StyleSheet.create({
+  safe:        { flex: 1, backgroundColor: C.bg },
   scroll:      { flex: 1, padding: Spacing.lg },
-  pageTitle:   { fontSize: 22, fontWeight: '800', color: Colors.text, marginBottom: Spacing.lg },
+  pageTitle:   { fontSize: 22, fontWeight: '800', color: C.text, marginBottom: Spacing.lg },
   row:         { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.sm },
   statRow:     { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  statLabel:   { fontSize: 12, color: Colors.textMuted, fontWeight: '600' },
+  statLabel:   { fontSize: 12, color: C.textMuted, fontWeight: '600' },
   statVal:     { fontSize: 15, fontWeight: '800' },
   adviceCard:  { borderLeftWidth: 4, borderRadius: Radius.sm, padding: Spacing.md, marginBottom: Spacing.sm },
   adviceTitle: { fontSize: 14, fontWeight: '800', marginBottom: 4 },
-  adviceText:  { fontSize: 13, color: Colors.textMuted, lineHeight: 20 },
+  adviceText:  { fontSize: 13, color: C.textMuted, lineHeight: 20 },
 });

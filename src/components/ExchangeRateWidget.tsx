@@ -6,7 +6,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useStore } from '../store/useStore';
 import { formatRateTimestamp } from '../services/exchangeService';
-import { Colors, Radius, Spacing } from '../utils/theme';
+import {useColors,  Colors, Radius, Spacing } from '../utils/theme';
 
 interface Props {
   lang: 'TR' | 'EN';
@@ -31,6 +31,8 @@ const CURRENCY_NAMES_EN: Record<string, string> = {
 };
 
 export default function ExchangeRateWidget({ lang }: Props) {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   const { exchangeRates, ratesMeta, loadExchangeRates } = useStore();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -117,9 +119,9 @@ export default function ExchangeRateWidget({ lang }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const make_styles = (C: any) => StyleSheet.create({
   container: {
-    backgroundColor: Colors.card,
+    backgroundColor: C.card,
     borderRadius: Radius.xl,
     padding: Spacing.lg,
     marginBottom: Spacing.sm,
@@ -137,11 +139,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: '800',
-    color: Colors.text,
+    color: C.text,
   },
   lastUpdate: {
     fontSize: 11,
-    color: Colors.textMuted,
+    color: C.textMuted,
     marginTop: 2,
   },
   refreshBtn: {
@@ -165,13 +167,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rateFlag:  { fontSize: 20, marginBottom: 2 },
-  rateCur:   { fontSize: 13, fontWeight: '800', color: Colors.text },
-  rateName:  { fontSize: 9, color: Colors.textMuted, textAlign: 'center', marginBottom: 4 },
-  rateValue: { fontSize: 16, fontWeight: '900', color: Colors.text },
-  rateTL:    { fontSize: 11, color: Colors.textMuted, fontWeight: '600' },
+  rateCur:   { fontSize: 13, fontWeight: '800', color: C.text },
+  rateName:  { fontSize: 9, color: C.textMuted, textAlign: 'center', marginBottom: 4 },
+  rateValue: { fontSize: 16, fontWeight: '900', color: C.text },
+  rateTL:    { fontSize: 11, color: C.textMuted, fontWeight: '600' },
   source: {
     fontSize: 10,
-    color: Colors.textLight,
+    color: C.textLight,
     textAlign: 'right',
   },
 });

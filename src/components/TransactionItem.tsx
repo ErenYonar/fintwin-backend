@@ -1,7 +1,7 @@
 // src/components/TransactionItem.tsx
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
-import { Colors, Spacing, Radius, Shadow } from '../utils/theme';
+import {useColors,  Colors, Spacing, Radius, Shadow } from '../utils/theme';
 import { Transaction } from '../services/api';
 import { translateKategori } from '../hooks/useTranslation';
 
@@ -13,6 +13,8 @@ interface Props {
 }
 
 export default function TransactionItem({ transaction: tx, onEdit, onDelete, lang = 'TR' }: Props) {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   const isIncome = tx.tip === 'Gelir';
   const sign     = isIncome ? '+' : '-';
   const clr      = isIncome ? Colors.income : Colors.expense;
@@ -69,10 +71,10 @@ export default function TransactionItem({ transaction: tx, onEdit, onDelete, lan
   );
 }
 
-const styles = StyleSheet.create({
+const make_styles = (C: any) => StyleSheet.create({
   row: {
     flexDirection: 'row', alignItems: 'center',
-    paddingVertical: Spacing.sm, borderBottomWidth: 1, borderBottomColor: Colors.border,
+    paddingVertical: Spacing.sm, borderBottomWidth: 1, borderBottomColor: C.border,
   },
   logoWrap: {
     width: 44, height: 44, borderRadius: 12,
@@ -80,11 +82,11 @@ const styles = StyleSheet.create({
   },
   logo:       { width: 28, height: 28 },
   info:       { flex: 1 },
-  detay:      { fontSize: 14, fontWeight: '600', color: Colors.text, marginBottom: 4 },
+  detay:      { fontSize: 14, fontWeight: '600', color: C.text, marginBottom: 4 },
   metaRow:    { flexDirection: 'row', alignItems: 'center', gap: 6 },
   badge:      { borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2 },
   badgeText:  { fontSize: 10, fontWeight: '600' },
-  tarih:      { fontSize: 11, color: Colors.textMuted },
+  tarih:      { fontSize: 11, color: C.textMuted },
   pendingDot: { fontSize: 11 },
   right:      { alignItems: 'flex-end' },
   tutar:      { fontSize: 14, fontWeight: '800', marginBottom: 4 },

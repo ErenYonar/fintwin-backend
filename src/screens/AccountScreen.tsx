@@ -9,7 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useStore } from '../store/useStore';
 import { Button, Card, Divider } from '../components/UI';
-import { Colors, Spacing, Radius, Shadow } from '../utils/theme';
+import { useColors, Colors, Spacing, Radius, Shadow } from '../utils/theme';
 import { useTranslation, MESLEK_TR_TO_EN, MESLEK_EN_TO_TR, GICS_TR_TO_EN, GICS_EN_TO_TR, CINSIYET_TR_TO_EN, CINSIYET_EN_TO_TR } from '../hooks/useTranslation';
 import { UserAPI } from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -101,30 +101,34 @@ function Dropdown({ label, options, value, onSelect, placeholder }: {
   label: string; options: string[]; value: string;
   onSelect: (v: string) => void; placeholder?: string;
 }) {
+  const Colors = useColors();
   const [visible, setVisible] = useState(false);
   return (
-    <View style={dd.container}>
-      <Text style={dd.label}>{label}</Text>
-      <TouchableOpacity style={dd.selector} onPress={() => setVisible(true)} activeOpacity={0.8}>
-        <Text style={[dd.selectorText, !value && { color: Colors.textLight }]}>
+    <View style={{ marginBottom: 14 }}>
+      <Text style={{ fontSize: 13, fontWeight: '600', color: Colors.textMuted, marginBottom: 6 }}>{label}</Text>
+      <TouchableOpacity
+        style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: Colors.bgInput, borderWidth: 1.5, borderColor: Colors.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 13 }}
+        onPress={() => setVisible(true)} activeOpacity={0.8}
+      >
+        <Text style={{ fontSize: 15, color: value ? Colors.text : Colors.textLight, flex: 1 }}>
           {value || placeholder || '— Select —'}
         </Text>
-        <Text style={dd.arrow}>▼</Text>
+        <Text style={{ fontSize: 11, color: Colors.textMuted }}>▼</Text>
       </TouchableOpacity>
       <Modal visible={visible} transparent animationType="fade">
-        <TouchableOpacity style={dd.overlay} activeOpacity={1} onPress={() => setVisible(false)}>
-          <View style={dd.modal}>
-            <Text style={dd.modalTitle}>{label}</Text>
+        <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 24 }} activeOpacity={1} onPress={() => setVisible(false)}>
+          <View style={{ backgroundColor: Colors.bgCard, borderRadius: 16, maxHeight: 420, overflow: 'hidden', borderWidth: 1, borderColor: Colors.border }}>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: Colors.text, padding: 16, borderBottomWidth: 1, borderBottomColor: Colors.border }}>{label}</Text>
             <FlatList
               data={options}
               keyExtractor={item => item}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={[dd.option, item === value && dd.optionActive]}
+                  style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: Colors.border, backgroundColor: item === value ? 'rgba(99,102,241,0.1)' : 'transparent' }}
                   onPress={() => { onSelect(item); setVisible(false); }}
                 >
-                  <Text style={[dd.optionText, item === value && dd.optionTextActive]}>{item}</Text>
-                  {item === value && <Text style={dd.check}>✓</Text>}
+                  <Text style={{ fontSize: 15, color: item === value ? Colors.primary : Colors.text, fontWeight: item === value ? '700' : '400' }}>{item}</Text>
+                  {item === value && <Text style={{ fontSize: 16, color: Colors.primary }}>✓</Text>}
                 </TouchableOpacity>
               )}
             />
@@ -136,6 +140,8 @@ function Dropdown({ label, options, value, onSelect, placeholder }: {
 }
 
 function ProfileRow({ icon, label, value }: { icon: string; label: string; value: string }) {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   return (
     <View style={styles.profileRow}>
       <View style={styles.profileRowIcon}>
@@ -150,6 +156,8 @@ function ProfileRow({ icon, label, value }: { icon: string; label: string; value
 }
 
 export default function AccountScreen() {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   const { lang }    = useTranslation();
   const navigation  = useNavigation<any>();
   const { user, logout, deleteAccount } = useStore();
@@ -363,30 +371,62 @@ export default function AccountScreen() {
 
         <Divider />
 
-        <Button
-          title={`🚪 ${L ? 'Çıkış Yap' : 'Sign Out'}`}
+        {/* ── Çıkış Yap ── */}
+        <TouchableOpacity
           onPress={handleLogout}
-          variant="secondary"
-          fullWidth
-          style={{ marginBottom: Spacing.sm }}
-        />
-
-        <Card style={styles.dangerCard}>
-          <Text style={styles.dangerTitle}>
-            {L ? '⚠️ Tehlikeli Bölge' : '⚠️ Danger Zone'}
+          activeOpacity={0.8}
+          style={{
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+            gap: 8, paddingVertical: 15, borderRadius: Radius.lg, marginBottom: 12,
+            backgroundColor: Colors.bgCard,
+            borderWidth: 1.5, borderColor: Colors.border,
+          }}
+        >
+          <Text style={{ fontSize: 18 }}>🚪</Text>
+          <Text style={{ fontSize: 15, fontWeight: '700', color: Colors.text }}>
+            {L ? 'Çıkış Yap' : 'Sign Out'}
           </Text>
-          <Text style={styles.dangerText}>
+        </TouchableOpacity>
+
+        {/* ── Tehlikeli Bölge ── */}
+        <View style={{
+          borderRadius: Radius.xl, borderWidth: 1.5,
+          borderColor: 'rgba(239,68,68,0.25)',
+          backgroundColor: Colors.bgCard,
+          padding: Spacing.lg, marginBottom: Spacing.sm,
+          overflow: 'hidden',
+        }}>
+          {/* Üst kırmızı şerit */}
+          <View style={{
+            position: 'absolute', top: 0, left: 0, right: 0, height: 4,
+            backgroundColor: Colors.danger,
+          }} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8, marginBottom: 8 }}>
+            <Text style={{ fontSize: 18 }}>⚠️</Text>
+            <Text style={{ fontSize: 15, fontWeight: '800', color: Colors.danger }}>
+              {L ? 'Tehlikeli Bölge' : 'Danger Zone'}
+            </Text>
+          </View>
+          <Text style={{ fontSize: 13, color: Colors.textMuted, lineHeight: 20, marginBottom: 16 }}>
             {L
               ? 'Hesabınızı sildiğinizde tüm verileriniz kalıcı olarak silinir ve geri alınamaz.'
               : 'Deleting your account will permanently remove all your data and cannot be undone.'}
           </Text>
-          <Button
-            title={`🗑️ ${L ? 'Hesabı Kalıcı Olarak Sil' : 'Delete Account Permanently'}`}
+          <TouchableOpacity
             onPress={handleDeleteAccount}
-            variant="danger"
-            fullWidth
-          />
-        </Card>
+            activeOpacity={0.8}
+            style={{
+              flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+              gap: 8, paddingVertical: 14, borderRadius: Radius.lg,
+              backgroundColor: Colors.danger,
+            }}
+          >
+            <Text style={{ fontSize: 16 }}>🗑️</Text>
+            <Text style={{ fontSize: 14, fontWeight: '800', color: '#fff' }}>
+              {L ? 'Hesabı Kalıcı Olarak Sil' : 'Delete Account Permanently'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -394,12 +434,12 @@ export default function AccountScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe:   { flex: 1, backgroundColor: Colors.bg },
+const make_styles = (C: any) => StyleSheet.create({
+  safe:   { flex: 1, backgroundColor: C.bg },
   scroll: { flex: 1, padding: Spacing.lg },
 
   backBtn:  { marginBottom: Spacing.sm },
-  backText: { fontSize: 14, color: Colors.primary, fontWeight: '600' },
+  backText: { fontSize: 14, color: C.primary, fontWeight: '600' },
 
   headerGrad: {
     borderRadius: Radius.xl, padding: Spacing.xl,
@@ -427,30 +467,30 @@ const styles = StyleSheet.create({
   headerDate:   { fontSize: 11, color: 'rgba(255,255,255,0.5)' },
 
   sectionHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: Spacing.md },
-  sectionTitle:     { fontSize: 16, fontWeight: '800', color: Colors.text },
+  sectionTitle:     { fontSize: 16, fontWeight: '800', color: C.text },
   editBtn: {
     backgroundColor: 'rgba(124,110,250,0.15)', borderRadius: Radius.md,
     paddingHorizontal: 14, paddingVertical: 8,
     borderWidth: 1.5, borderColor: 'rgba(124,110,250,0.4)',
   },
-  editBtnText: { fontSize: 13, fontWeight: '700', color: Colors.primary },
+  editBtnText: { fontSize: 13, fontWeight: '700', color: C.primary },
 
   profileList: { gap: 2 },
   profileRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: Colors.border,
+    paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: C.border,
   },
   profileRowIcon: {
     width: 38, height: 38, borderRadius: 10,
-    backgroundColor: Colors.bgElevated,
+    backgroundColor: C.bgElevated,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: Colors.border,
+    borderWidth: 1, borderColor: C.border,
   },
-  profileRowLabel: { fontSize: 11, color: Colors.textMuted, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
-  profileRowValue: { fontSize: 14, color: Colors.text, fontWeight: '700', marginTop: 1 },
+  profileRowLabel: { fontSize: 11, color: C.textMuted, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
+  profileRowValue: { fontSize: 14, color: C.text, fontWeight: '700', marginTop: 1 },
 
   editHint: {
-    fontSize: 12, color: Colors.textMuted, marginBottom: Spacing.md,
+    fontSize: 12, color: C.textMuted, marginBottom: Spacing.md,
     backgroundColor: 'rgba(124,110,250,0.1)', borderRadius: Radius.sm,
     padding: Spacing.sm, lineHeight: 18,
     borderWidth: 1, borderColor: 'rgba(124,110,250,0.2)',
@@ -458,20 +498,20 @@ const styles = StyleSheet.create({
   editActions: { flexDirection: 'row', gap: 10, marginTop: Spacing.sm },
   cancelBtn: {
     flex: 1, paddingVertical: 13, borderRadius: Radius.lg,
-    backgroundColor: Colors.bgElevated, alignItems: 'center',
-    borderWidth: 1.5, borderColor: Colors.border,
+    backgroundColor: C.bgElevated, alignItems: 'center',
+    borderWidth: 1.5, borderColor: C.border,
   },
-  cancelBtnText: { fontSize: 14, fontWeight: '700', color: Colors.textMuted },
+  cancelBtnText: { fontSize: 14, fontWeight: '700', color: C.textMuted },
   saveBtn: {
     flex: 2, paddingVertical: 13, borderRadius: Radius.lg,
-    backgroundColor: Colors.primary, alignItems: 'center',
+    backgroundColor: C.primary, alignItems: 'center',
     ...Shadow.md,
   },
   saveBtnText: { fontSize: 14, fontWeight: '800', color: '#fff' },
 
-  dangerCard:  { borderWidth: 1.5, borderColor: 'rgba(248,113,113,0.4)', backgroundColor: 'rgba(248,113,113,0.08)' },
-  dangerTitle: { fontSize: 14, fontWeight: '700', color: Colors.danger, marginBottom: 8 },
-  dangerText:  { fontSize: 13, color: Colors.danger, marginBottom: Spacing.md, lineHeight: 20, opacity: 0.8 },
+  dangerCard:  { borderWidth: 1.5, borderColor: 'rgba(239,68,68,0.3)', backgroundColor: 'rgba(239,68,68,0.05)', borderRadius: 16, padding: 4 },
+  dangerTitle: { fontSize: 15, fontWeight: '800', color: C.danger, marginBottom: 8 },
+  dangerText:  { fontSize: 13, color: C.textMuted, marginBottom: Spacing.md, lineHeight: 20 },
 });
 
 const dd = StyleSheet.create({

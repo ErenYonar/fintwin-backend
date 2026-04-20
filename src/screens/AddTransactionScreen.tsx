@@ -9,7 +9,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { useStore } from '../store/useStore';
 import { Button, Input, Card, Divider } from '../components/UI';
-import { Colors, Spacing, Radius, Typography } from '../utils/theme';
+import { useColors, Colors, Spacing, Radius, Typography } from '../utils/theme';
 import { useTranslation, KATEGORI_EN_TO_TR } from '../hooks/useTranslation';
 
 // ── Tip tanımı ────────────────────────────────────────────────────────────────
@@ -295,6 +295,8 @@ interface SubCategoryModalProps {
 }
 
 function SubCategoryModal({ visible, items, selected, lang, onSelect, onClose }: SubCategoryModalProps) {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={onClose} />
@@ -334,6 +336,8 @@ function SubCategoryModal({ visible, items, selected, lang, onSelect, onClose }:
 
 // ── Ana Ekran ─────────────────────────────────────────────────────────────────
 export default function AddTransactionScreen() {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   const { t, lang } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
@@ -610,52 +614,52 @@ export default function AddTransactionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe:        { flex: 1, backgroundColor: Colors.bg },
+const make_styles = (C: any) => StyleSheet.create({
+  safe:        { flex: 1, backgroundColor: C.bg },
   scroll:      { flex: 1, padding: Spacing.lg },
   header:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: Spacing.lg },
-  backBtn:     { fontSize: 14, color: Colors.primary, fontWeight: '600' },
+  backBtn:     { fontSize: 14, color: C.primary, fontWeight: '600' },
   headerTitle: { ...Typography.h3 },
 
   // Tip toggle
-  tipToggle:  { flexDirection: 'row', backgroundColor: Colors.bgElevated, borderRadius: Radius.lg, padding: 4, marginBottom: Spacing.md, gap: 4, borderWidth: 1, borderColor: Colors.border },
+  tipToggle:  { flexDirection: 'row', backgroundColor: C.bgElevated, borderRadius: Radius.lg, padding: 4, marginBottom: Spacing.md, gap: 4, borderWidth: 1, borderColor: C.border },
   tipBtn:     { flex: 1, paddingVertical: 12, borderRadius: Radius.md, alignItems: 'center' },
-  tipIncome:  { backgroundColor: 'rgba(52,211,153,0.2)', borderWidth: 1, borderColor: Colors.success },
-  tipExpense: { backgroundColor: 'rgba(248,113,113,0.2)', borderWidth: 1, borderColor: Colors.danger },
-  tipBtnText: { fontSize: 14, fontWeight: '600', color: Colors.textMuted },
+  tipIncome:  { backgroundColor: 'rgba(52,211,153,0.2)', borderWidth: 1, borderColor: C.success },
+  tipExpense: { backgroundColor: 'rgba(248,113,113,0.2)', borderWidth: 1, borderColor: C.danger },
+  tipBtnText: { fontSize: 14, fontWeight: '600', color: C.textMuted },
 
-  fieldLabel: { fontSize: 13, fontWeight: '600', color: Colors.textMuted, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
+  fieldLabel: { fontSize: 13, fontWeight: '600', color: C.textMuted, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
   chipScroll: { marginBottom: 4 },
-  swipeHint:  { fontSize: 10, color: Colors.textMuted, textAlign: 'center', marginBottom: Spacing.md, letterSpacing: 1 },
+  swipeHint:  { fontSize: 10, color: C.textMuted, textAlign: 'center', marginBottom: Spacing.md, letterSpacing: 1 },
   scrollHintRight: { width: 0, height: 0 },
   scrollHintArrow: { width: 0, height: 0 },
-  chip:       { paddingHorizontal: 14, paddingVertical: 8, borderRadius: Radius.full, backgroundColor: Colors.bgElevated, marginRight: 8, borderWidth: 1, borderColor: Colors.border },
-  chipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  chipText:   { fontSize: 13, fontWeight: '600', color: Colors.textMuted },
+  chip:       { paddingHorizontal: 14, paddingVertical: 8, borderRadius: Radius.full, backgroundColor: C.bgElevated, marginRight: 8, borderWidth: 1, borderColor: C.border },
+  chipActive: { backgroundColor: C.primary, borderColor: C.primary },
+  chipText:   { fontSize: 13, fontWeight: '600', color: C.textMuted },
   chipTextActive: { color: '#fff' },
 
   // Preset selector
   presetSelector: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    borderWidth: 1.5, borderColor: Colors.primary, borderRadius: Radius.md,
+    borderWidth: 1.5, borderColor: C.primary, borderRadius: Radius.md,
     paddingHorizontal: 14, paddingVertical: 12, marginBottom: 6,
     backgroundColor: 'rgba(124,110,250,0.08)',
   },
   presetSelectorInner:       { flex: 1 },
-  presetSelectorPlaceholder: { fontSize: 14, color: Colors.textMuted, fontStyle: 'italic' },
-  presetSelectorValue:       { fontSize: 14, color: Colors.text, fontWeight: '700' },
-  presetSelectorPrice:       { fontSize: 12, color: Colors.primary, fontWeight: '600', marginTop: 2 },
-  presetSelectorArrow:       { fontSize: 12, color: Colors.primary, marginLeft: 8 },
+  presetSelectorPlaceholder: { fontSize: 14, color: C.textMuted, fontStyle: 'italic' },
+  presetSelectorValue:       { fontSize: 14, color: C.text, fontWeight: '700' },
+  presetSelectorPrice:       { fontSize: 12, color: C.primary, fontWeight: '600', marginTop: 2 },
+  presetSelectorArrow:       { fontSize: 12, color: C.primary, marginLeft: 8 },
   clearPreset:               { alignSelf: 'flex-start', marginBottom: Spacing.xs },
-  clearPresetText:           { fontSize: 12, color: Colors.danger, fontWeight: '600' },
+  clearPresetText:           { fontSize: 12, color: C.danger, fontWeight: '600' },
 
   // Tutar
   amountRow:      { flexDirection: 'row', alignItems: 'flex-end', gap: 8, marginBottom: Spacing.xs },
   currencyPicker: { flexDirection: 'column', gap: 4 },
-  currBtn:        { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: Colors.bgElevated, borderWidth: 1, borderColor: Colors.border },
-  currBtnActive:  { backgroundColor: 'rgba(124,110,250,0.2)', borderColor: Colors.primary },
-  currBtnText:    { fontSize: 12, fontWeight: '600', color: Colors.textMuted },
-  tlCaption:      { fontSize: 12, color: Colors.primary, fontWeight: '600', marginBottom: Spacing.sm },
+  currBtn:        { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: C.bgElevated, borderWidth: 1, borderColor: C.border },
+  currBtnActive:  { backgroundColor: 'rgba(124,110,250,0.2)', borderColor: C.primary },
+  currBtnText:    { fontSize: 12, fontWeight: '600', color: C.textMuted },
+  tlCaption:      { fontSize: 12, color: C.primary, fontWeight: '600', marginBottom: Spacing.sm },
   amountPreview:  { borderRadius: Radius.lg, padding: Spacing.lg, alignItems: 'center', marginBottom: Spacing.md },
   amountPreviewText: { fontSize: 32, fontWeight: '900', letterSpacing: -1 },
 
@@ -666,18 +670,18 @@ const styles = StyleSheet.create({
   },
   modalSheet: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: Colors.bgCard,
+    backgroundColor: C.bgCard,
     borderTopLeftRadius: 24, borderTopRightRadius: 24,
     paddingHorizontal: 20, paddingBottom: 36, paddingTop: 12,
-    borderTopWidth: 1, borderColor: Colors.border,
+    borderTopWidth: 1, borderColor: C.border,
     shadowColor: '#000', shadowOpacity: 0.5, shadowRadius: 20, elevation: 16,
   },
   modalHandle: {
-    width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border,
+    width: 40, height: 4, borderRadius: 2, backgroundColor: C.border,
     alignSelf: 'center', marginBottom: 16,
   },
   modalTitle: {
-    fontSize: 16, fontWeight: '800', color: Colors.text,
+    fontSize: 16, fontWeight: '800', color: C.text,
     marginBottom: 12, textAlign: 'center',
   },
   modalItem: {
@@ -685,15 +689,15 @@ const styles = StyleSheet.create({
     paddingVertical: 14, paddingHorizontal: 4,
   },
   modalItemActive:       { backgroundColor: 'rgba(124,110,250,0.15)', borderRadius: 10, paddingHorizontal: 10, marginHorizontal: -6 },
-  modalItemLabel:        { fontSize: 14, fontWeight: '600', color: Colors.text, flex: 1 },
-  modalItemLabelActive:  { color: Colors.primary },
-  modalItemPrice:        { fontSize: 14, fontWeight: '700', color: Colors.textMuted, marginLeft: 12 },
-  modalItemPriceActive:  { color: Colors.primary },
-  modalSep:              { height: 1, backgroundColor: Colors.border },
+  modalItemLabel:        { fontSize: 14, fontWeight: '600', color: C.text, flex: 1 },
+  modalItemLabelActive:  { color: C.primary },
+  modalItemPrice:        { fontSize: 14, fontWeight: '700', color: C.textMuted, marginLeft: 12 },
+  modalItemPriceActive:  { color: C.primary },
+  modalSep:              { height: 1, backgroundColor: C.border },
   modalCloseBtn: {
-    marginTop: 16, borderWidth: 1.5, borderColor: Colors.border,
+    marginTop: 16, borderWidth: 1.5, borderColor: C.border,
     borderRadius: Radius.md, paddingVertical: 12, alignItems: 'center',
-    backgroundColor: Colors.bgElevated,
+    backgroundColor: C.bgElevated,
   },
-  modalCloseBtnText: { fontSize: 14, fontWeight: '700', color: Colors.textMuted },
+  modalCloseBtnText: { fontSize: 14, fontWeight: '700', color: C.textMuted },
 });

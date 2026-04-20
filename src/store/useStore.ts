@@ -12,6 +12,7 @@ import {
   deleteTransaction, clearAllLocal, setCurrentUser, saveFeedback,
 } from '../services/localDb';
 import { getExchangeRates, ExchangeRates } from '../services/exchangeService';
+import { applyTheme } from '../utils/theme';
 
 interface SyncState {
   isSyncing: boolean; lastSync: string | null;
@@ -33,6 +34,7 @@ interface AppStore {
   analytics:     Analytics | null;
   trends:        any[];
   lang:          'TR' | 'EN';
+  themeMode:     'dark' | 'light';
   isLoading:     boolean;
   syncState:     SyncState;
 
@@ -49,6 +51,7 @@ interface AppStore {
   loadExchangeRates: (forceRefresh?: boolean) => Promise<void>;
   loadAnalytics:     () => Promise<void>;
   setLang:           (lang: 'TR' | 'EN') => void;
+  setThemeMode:      (mode: 'dark' | 'light') => void;
   deleteAccount:     () => Promise<void>;
   sendFeedback:      (message: string) => Promise<void>;
 }
@@ -74,6 +77,7 @@ export const useStore = create<AppStore>((set, get) => ({
   exchangeRates: { TL: 1, USD: 38.5, EUR: 41.5, GBP: 49.0 },
   ratesMeta: null, analytics: null, trends: [],
   lang: 'TR', isLoading: false,
+  themeMode: 'dark' as 'dark' | 'light',
   syncState: { isSyncing: false, lastSync: null, pendingCount: 0, isOnline: true },
 
   login: async (email, lang) => {
@@ -158,15 +162,24 @@ export const useStore = create<AppStore>((set, get) => ({
     AsyncStorage.setItem('fintwin_lang', lang);
   },
 
+  setThemeMode: (mode) => {
+    set({ themeMode: mode });
+    applyTheme(mode);
+    AsyncStorage.setItem('fintwin_theme', mode);
+  },
+
   deleteAccount: async () => {
     try { await UserAPI.deleteMe(); } catch { /* ignore */ }
     await get().logout();
   },
 
   sendFeedback: async (message: string) => {
-    const { lang } = get();
+    const { lang, token } = get();
     try {
       await saveFeedback(message, lang);
+      if (token) {
+        await UserAPI.sendFeedback(message, lang);
+      }
     } catch (e) { console.warn('[Store] sendFeedback:', e); throw e; }
   },
 }));
@@ -174,11 +187,17 @@ export const useStore = create<AppStore>((set, get) => ({
 // ── Session restore ───────────────────────────────────────────────────────────
 export async function restoreSession() {
   try {
-    const [token, userStr, lang] = await Promise.all([
+    const [token, userStr, lang, theme] = await Promise.all([
       AsyncStorage.getItem('fintwin_token'),
       AsyncStorage.getItem('fintwin_user'),
       AsyncStorage.getItem('fintwin_lang'),
+      AsyncStorage.getItem('fintwin_theme'),
     ]);
+
+    // Tema uygula
+    const themeMode = (theme === 'light' ? 'light' : 'dark') as 'dark' | 'light';
+    applyTheme(themeMode);
+    useStore.setState({ themeMode });
 
     if (token && userStr) {
       const user = JSON.parse(userStr) as UserProfile;

@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useStore } from '../store/useStore';
-import { Colors, Shadow, Radius, Spacing } from '../utils/theme';
+import {useColors,  Colors, Shadow, Radius, Spacing } from '../utils/theme';
 import { translateKategori } from '../hooks/useTranslation';
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -59,6 +59,8 @@ function translateDetay(detay: string, lang: string): string {
 }
 
 export default function RecentTransactionsWidget({ lang }: { lang: string }) {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   const navigation = useNavigation<any>();
   const { transactions, deleteTx, updateTx, loadTransactions } = useStore();
   const L = lang === 'TR';
@@ -173,9 +175,9 @@ export default function RecentTransactionsWidget({ lang }: { lang: string }) {
       {/* Filtre butonları */}
       <View style={styles.filterRow}>
         {([
-          { key: 'gelir', emoji: '🟢', label: L ? 'Gelirler' : 'Income',   active: 'rgba(52,211,153,0.2)',  border: Colors.success, color: Colors.success },
-          { key: 'gider', emoji: '🔴', label: L ? 'Giderler' : 'Expenses', active: 'rgba(248,113,113,0.2)', border: Colors.danger,  color: Colors.danger  },
-          { key: 'all',   emoji: '✅', label: L ? 'Tümü'     : 'All',       active: Colors.primary,          border: Colors.primary, color: '#fff'         },
+          { key: 'gelir', dot: Colors.success, label: L ? 'Gelirler' : 'Income',   active: 'rgba(52,211,153,0.2)',  border: Colors.success, color: Colors.success },
+          { key: 'gider', dot: Colors.danger, label: L ? 'Giderler' : 'Expenses', active: 'rgba(248,113,113,0.2)', border: Colors.danger,  color: Colors.danger  },
+          { key: 'all',   dot: Colors.primary, label: L ? 'Tümü'     : 'All',       active: Colors.primary,          border: Colors.primary, color: '#fff'         },
         ] as const).map(f => {
           const isActive = filter === f.key;
           return (
@@ -184,8 +186,8 @@ export default function RecentTransactionsWidget({ lang }: { lang: string }) {
               style={[styles.filterBtn, isActive && { backgroundColor: f.active, borderColor: f.border }]}
               onPress={() => setFilter(f.key as any)}
             >
-              <Text style={styles.filterEmoji}>{f.emoji}</Text>
-              <Text style={[styles.filterText, { color: isActive ? f.color : '#FFFFFF' }]}>
+              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: f.dot, marginBottom: 4 }} />
+              <Text style={[styles.filterText, { color: isActive ? f.color : Colors.text }]}>
                 {f.label}
               </Text>
             </TouchableOpacity>
@@ -342,11 +344,11 @@ export default function RecentTransactionsWidget({ lang }: { lang: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container:    { backgroundColor: Colors.bgCard, borderRadius: Radius.lg, padding: Spacing.lg, marginBottom: Spacing.md, borderWidth: 1, borderColor: Colors.border, ...Shadow.sm },
+const make_styles = (C: any) => StyleSheet.create({
+  container:    { backgroundColor: C.bgCard, borderRadius: Radius.lg, padding: Spacing.lg, marginBottom: Spacing.md, borderWidth: 1, borderColor: C.border, ...Shadow.sm },
   header:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  title:        { fontSize: 15, fontWeight: '800', color: Colors.text },
-  seeAll:       { fontSize: 13, color: Colors.primary, fontWeight: '600' },
+  title:        { fontSize: 15, fontWeight: '800', color: C.text },
+  seeAll:       { fontSize: 13, color: C.primary, fontWeight: '600' },
 
   chipScroll:   { marginBottom: 12 },
   chip:         { flexDirection: 'row', alignItems: 'center', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7, marginRight: 8, gap: 5 },
@@ -355,21 +357,21 @@ const styles = StyleSheet.create({
   chipAmount:   { fontSize: 13, fontWeight: '800' },
 
   filterRow:    { flexDirection: 'row', gap: 8, marginBottom: 10 },
-  filterBtn:    { flex: 1, paddingVertical: 8, borderRadius: 10, backgroundColor: '#1E1E32', alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#3A3A5C', minHeight: 40 },
-  filterEmoji:  { fontSize: 14, marginBottom: 1 },
-  filterText:   { fontSize: 11, fontWeight: '700', color: '#FFFFFF' },
+  filterBtn:    { flex: 1, paddingVertical: 10, paddingHorizontal: 4, borderRadius: 10, backgroundColor: C.bgInput, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: C.borderLight, minHeight: 48, overflow: 'hidden' },
+  filterEmoji:  { fontSize: 16, marginBottom: 2 },
+  filterText:   { fontSize: 11, fontWeight: '700' },
 
-  countText:    { fontSize: 12, color: Colors.textMuted, marginBottom: 8, fontWeight: '600' },
+  countText:    { fontSize: 12, color: C.textMuted, marginBottom: 8, fontWeight: '600' },
 
   emptyBox:     { alignItems: 'center', paddingVertical: 20 },
-  emptyText:    { fontSize: 14, color: Colors.textLight },
+  emptyText:    { fontSize: 14, color: C.textLight },
 
-  tableHeader:  { flexDirection: 'row', paddingHorizontal: 6, paddingVertical: 6, backgroundColor: Colors.bgElevated, borderRadius: 8, marginBottom: 4 },
-  thText:       { fontSize: 10, fontWeight: '700', color: Colors.textMuted, textTransform: 'uppercase' },
+  tableHeader:  { flexDirection: 'row', paddingHorizontal: 6, paddingVertical: 6, backgroundColor: C.bgElevated, borderRadius: 8, marginBottom: 4 },
+  thText:       { fontSize: 10, fontWeight: '700', color: C.textMuted, textTransform: 'uppercase' },
 
-  row:          { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  row:          { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: C.border },
   rowAlt:       { backgroundColor: 'rgba(124,110,250,0.04)' },
-  cell:         { fontSize: 12, color: Colors.text },
+  cell:         { fontSize: 12, color: C.text },
 
   catBadge:     { borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3 },
   catBadgeText: { fontSize: 10, fontWeight: '700' },
@@ -378,15 +380,15 @@ const styles = StyleSheet.create({
   actionBtn:    { padding: 4 },
 
   expandBtn:    { alignItems: 'center', paddingVertical: 12 },
-  expandText:   { fontSize: 13, color: Colors.primary, fontWeight: '700' },
+  expandText:   { fontSize: 13, color: C.primary, fontWeight: '700' },
 
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
-  modalBox:     { backgroundColor: Colors.bgCard, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, borderTopWidth: 1, borderColor: Colors.border },
-  modalTitle:   { fontSize: 18, fontWeight: '800', color: Colors.text, marginBottom: 16 },
+  modalBox:     { backgroundColor: C.bgCard, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, borderTopWidth: 1, borderColor: C.border },
+  modalTitle:   { fontSize: 18, fontWeight: '800', color: C.text, marginBottom: 16 },
   editInfoRow:  { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 },
-  editDate:     { fontSize: 13, color: Colors.textMuted },
-  modalLabel:   { fontSize: 13, fontWeight: '600', color: Colors.textMuted, marginBottom: 6 },
-  modalInput:   { backgroundColor: Colors.bgInput, borderWidth: 1.5, borderColor: Colors.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, marginBottom: 14, color: Colors.text },
+  editDate:     { fontSize: 13, color: C.textMuted },
+  modalLabel:   { fontSize: 13, fontWeight: '600', color: C.textMuted, marginBottom: 6 },
+  modalInput:   { backgroundColor: C.bgInput, borderWidth: 1.5, borderColor: C.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, marginBottom: 14, color: C.text },
   modalBtns:    { flexDirection: 'row', gap: 12, marginTop: 8 },
   modalBtn:     { flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
 });

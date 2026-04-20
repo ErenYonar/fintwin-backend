@@ -7,12 +7,14 @@ import { useNavigation } from '@react-navigation/native';
 import { useStore } from '../store/useStore';
 import TransactionItem from '../components/TransactionItem';
 import { EmptyState, SyncBanner } from '../components/UI';
-import { Colors, Spacing, Radius, Typography } from '../utils/theme';
+import { useColors, Colors, Spacing, Radius, Typography } from '../utils/theme';
 import { useTranslation } from '../hooks/useTranslation';
 
 type Filter = 'all' | 'Gelir' | 'Gider';
 
 export default function TransactionsScreen() {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   const { t, lang } = useTranslation();
   const navigation = useNavigation<any>();
   const { transactions, deleteTx, syncState } = useStore();
@@ -81,16 +83,16 @@ export default function TransactionsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe:            { flex: 1, backgroundColor: Colors.bg },
+const make_styles = (C: any) => StyleSheet.create({
+  safe:            { flex: 1, backgroundColor: C.bg },
   header:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: Spacing.lg, paddingBottom: Spacing.sm },
-  back:            { fontSize: 24, color: Colors.primary, fontWeight: '700' },
+  back:            { fontSize: 24, color: C.primary, fontWeight: '700' },
   title:           { ...Typography.h3 },
-  addBtn:          { fontSize: 24, color: Colors.primary, fontWeight: '700' },
+  addBtn:          { fontSize: 24, color: C.primary, fontWeight: '700' },
   filterRow:       { flexDirection: 'row', gap: Spacing.sm, paddingHorizontal: Spacing.lg, marginBottom: Spacing.sm },
-  filterBtn:       { flex: 1, paddingVertical: 10, borderRadius: Radius.md, backgroundColor: Colors.bgElevated, alignItems: 'center', borderWidth: 1, borderColor: Colors.border },
-  filterBtnActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  filterText:      { fontSize: 12, fontWeight: '600', color: Colors.textMuted },
+  filterBtn:       { flex: 1, paddingVertical: 10, borderRadius: Radius.md, backgroundColor: C.bgElevated, alignItems: 'center', borderWidth: 1, borderColor: C.border },
+  filterBtnActive: { backgroundColor: C.primary, borderColor: C.primary },
+  filterText:      { fontSize: 12, fontWeight: '600', color: C.textMuted },
   filterTextActive:{ color: '#fff' },
-  countText:       { fontSize: 12, color: Colors.textMuted, paddingHorizontal: Spacing.lg, marginBottom: 4 },
+  countText:       { fontSize: 12, color: C.textMuted, paddingHorizontal: Spacing.lg, marginBottom: 4 },
 });

@@ -1,7 +1,7 @@
 // src/screens/OTPScreen.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, Alert, TextInput,
+  View, Text, StyleSheet, Alert, TextInput, ActivityIndicator,
   KeyboardAvoidingView, Platform, TouchableOpacity,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -11,12 +11,14 @@ import * as Linking from 'expo-linking';
 import { useStore } from '../store/useStore';
 import { AuthAPI } from '../services/api';
 import { Button } from '../components/UI';
-import { Colors, Spacing, Radius, Typography, Shadow } from '../utils/theme';
+import { useColors, Colors, Spacing, Radius, Typography, Shadow } from '../utils/theme';
 import { useTranslation } from '../hooks/useTranslation';
 
 const OTP_EXPIRE = 300;
 
 export default function OTPScreen() {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   const { t, lang } = useTranslation();
   const navigation  = useNavigation<any>();
   const route       = useRoute<any>();
@@ -182,13 +184,17 @@ export default function OTPScreen() {
           fullWidth
           style={{ marginBottom: Spacing.sm }}
         />
-        <Button
-          title={t.otp_resend_btn}
+        <TouchableOpacity
           onPress={handleResend}
-          loading={resending}
-          variant="secondary"
-          fullWidth
-        />
+          disabled={resending}
+          activeOpacity={0.8}
+          style={{ paddingVertical: 14, borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: Colors.bgCard, alignItems: 'center', justifyContent: 'center' }}
+        >
+          {resending
+            ? <ActivityIndicator size="small" color={Colors.primary} />
+            : <Text style={{ fontSize: 15, fontWeight: '700', color: Colors.text }}>{t.otp_resend_btn}</Text>
+          }
+        </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Text style={styles.backText}>
@@ -200,8 +206,8 @@ export default function OTPScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.bg, padding: Spacing.xl },
+const make_styles = (C: any) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: C.bg, padding: Spacing.xl },
   header: {
     borderRadius: Radius.xl, padding: Spacing.xl,
     alignItems: 'center', marginBottom: Spacing.lg, ...Shadow.lg,
@@ -211,26 +217,26 @@ const styles = StyleSheet.create({
   headerSub:   { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
   emailBanner: {
     backgroundColor: 'rgba(124,110,250,0.1)',
-    borderWidth: 1.5, borderColor: Colors.primary,
+    borderWidth: 1.5, borderColor: C.primary,
     borderRadius: Radius.lg, padding: Spacing.lg, marginBottom: Spacing.lg,
   },
-  emailLabel: { fontSize: 13, fontWeight: '600', color: Colors.primary, marginBottom: 4 },
-  emailText:  { fontSize: 15, fontWeight: '800', color: Colors.text },
-  emailHint:  { fontSize: 12, color: Colors.textMuted, marginTop: 4, lineHeight: 18 },
+  emailLabel: { fontSize: 13, fontWeight: '600', color: C.primary, marginBottom: 4 },
+  emailText:  { fontSize: 15, fontWeight: '800', color: C.text },
+  emailHint:  { fontSize: 12, color: C.textMuted, marginTop: 4, lineHeight: 18 },
   timerBox: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     borderWidth: 1.5, borderRadius: Radius.lg, padding: Spacing.md,
-    marginBottom: Spacing.lg, backgroundColor: Colors.bgElevated,
+    marginBottom: Spacing.lg, backgroundColor: C.bgElevated,
   },
   timerText:  { fontSize: 18, fontWeight: '700' },
   otpWrapper: { marginBottom: Spacing.xl },
   otpInput: {
     backgroundColor: 'rgba(124,110,250,0.1)',
-    borderWidth: 2, borderColor: Colors.primary,
+    borderWidth: 2, borderColor: C.primary,
     borderRadius: Radius.lg, padding: Spacing.xl,
-    fontSize: 32, fontWeight: '800', color: Colors.primary,
+    fontSize: 32, fontWeight: '800', color: C.primary,
     textAlign: 'center', letterSpacing: 12, ...Shadow.md,
   },
   backBtn:  { marginTop: Spacing.xl, alignItems: 'center' },
-  backText: { fontSize: 14, color: Colors.primary, fontWeight: '600' },
+  backText: { fontSize: 14, color: C.primary, fontWeight: '600' },
 });

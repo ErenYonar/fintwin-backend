@@ -11,7 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useStore } from '../store/useStore';
 import RecentTransactionsWidget from '../components/RecentTransactionsWidget';
 import AccountActionsWidget from '../components/AccountActionsWidget';
-import { Colors, Radius, Spacing, Shadow } from '../utils/theme';
+import { useColors, Colors, Radius, Spacing, Shadow } from '../utils/theme';
 import { BASE_URL } from '../services/api';
 
 // ── Tipler ────────────────────────────────────────────────────────────────────
@@ -145,6 +145,8 @@ const MEDALS = ['🥇', '🥈', '🥉', '4.', '5.'];
 
 // ── Ana Ekran ─────────────────────────────────────────────────────────────────
 export default function StatementScreen() {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   const lang  = useStore(s => s.lang);
   const token = useStore(s => s.token);
   const L = lang === 'TR';
@@ -254,7 +256,7 @@ export default function StatementScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#0F0F1A' }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bg }} edges={['top']}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
 
         {/* ── DARK HEADER ── */}
@@ -484,48 +486,48 @@ export default function StatementScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F0F1A' },
+const make_styles = (C: any) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: C.bg },
 
-  header: { paddingTop: 20, paddingBottom: 24, paddingHorizontal: 24, backgroundColor: '#0F0F1A' },
+  header: { paddingTop: 20, paddingBottom: 24, paddingHorizontal: 24, backgroundColor: C.bg },
   headerCircle1: { width: 0, height: 0 },
   headerCircle2: { width: 0, height: 0 },
   headerEmoji:   { fontSize: 32, marginBottom: 8 },
-  headerTitle:   { fontSize: 24, fontWeight: '900', color: Colors.text, letterSpacing: -0.5 },
-  headerSub:     { fontSize: 13, color: Colors.textMuted, marginTop: 4, marginBottom: 18 },
-  headerStatRow: { flexDirection: 'row', backgroundColor: Colors.bgElevated, borderRadius: 14, padding: 14, alignItems: 'center', borderWidth: 1, borderColor: Colors.border },
+  headerTitle:   { fontSize: 24, fontWeight: '900', color: C.text, letterSpacing: -0.5 },
+  headerSub:     { fontSize: 13, color: C.textMuted, marginTop: 4, marginBottom: 18 },
+  headerStatRow: { flexDirection: 'row', backgroundColor: C.bgElevated, borderRadius: 14, padding: 14, alignItems: 'center', borderWidth: 1, borderColor: C.border },
   headerStatBox:     { flex: 1, alignItems: 'center' },
-  headerStatValue:   { fontSize: 18, fontWeight: '900', color: Colors.text },
-  headerStatLabel:   { fontSize: 11, color: Colors.textMuted, marginTop: 2, fontWeight: '600' },
-  headerStatDivider: { width: 1, height: 32, backgroundColor: Colors.border },
+  headerStatValue:   { fontSize: 18, fontWeight: '900', color: C.text },
+  headerStatLabel:   { fontSize: 11, color: C.textMuted, marginTop: 2, fontWeight: '600' },
+  headerStatDivider: { width: 1, height: 32, backgroundColor: C.border },
 
   uploadBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: Colors.primary, borderRadius: 16, padding: 16, margin: 16,
-    shadowColor: Colors.primary, shadowOpacity: 0.4, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 5,
+    backgroundColor: C.primary, borderRadius: 16, padding: 16, margin: 16,
+    shadowColor: C.primary, shadowOpacity: 0.4, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 5,
   },
   uploadIcon: { fontSize: 18 },
   uploadText: { color: '#fff', fontSize: 16, fontWeight: '800' },
 
   emptyBox:  { alignItems: 'center', paddingVertical: 48, paddingHorizontal: 24 },
   emptyIcon: { fontSize: 48, marginBottom: 12 },
-  emptyText: { fontSize: 16, fontWeight: '700', color: Colors.textMuted, marginBottom: 6 },
-  emptyHint: { fontSize: 13, color: Colors.textLight, textAlign: 'center' },
+  emptyText: { fontSize: 16, fontWeight: '700', color: C.textMuted, marginBottom: 6 },
+  emptyHint: { fontSize: 13, color: C.textLight, textAlign: 'center' },
 
-  sectionTitle: { fontSize: 15, fontWeight: '800', color: Colors.text, marginBottom: 10, paddingHorizontal: 16, letterSpacing: 0.2 },
+  sectionTitle: { fontSize: 15, fontWeight: '800', color: C.text, marginBottom: 10, paddingHorizontal: 16, letterSpacing: 0.2 },
 
-  statementCard: { backgroundColor: Colors.bgCard, borderRadius: 16, padding: 14, marginBottom: 10, marginHorizontal: 16, borderWidth: 2, borderColor: Colors.border, ...Shadow.sm },
-  statementCardActive: { borderColor: Colors.primary, backgroundColor: Colors.bgElevated },
+  statementCard: { backgroundColor: C.bgCard, borderRadius: 16, padding: 14, marginBottom: 10, marginHorizontal: 16, borderWidth: 2, borderColor: C.border, ...Shadow.sm },
+  statementCardActive: { borderColor: C.primary, backgroundColor: C.bgElevated },
   statementRow:    { flexDirection: 'row', alignItems: 'center', gap: 10 },
   statementIconBox: { width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(124,110,250,0.15)', alignItems: 'center', justifyContent: 'center' },
-  statementName:   { fontSize: 14, fontWeight: '700', color: Colors.text },
-  statementMeta:   { fontSize: 12, color: Colors.textMuted, marginTop: 3 },
+  statementName:   { fontSize: 14, fontWeight: '700', color: C.text },
+  statementMeta:   { fontSize: 12, color: C.textMuted, marginTop: 3 },
   statementRight:  { alignItems: 'flex-end', gap: 6 },
-  statementAmount: { fontSize: 15, fontWeight: '900', color: Colors.primary },
+  statementAmount: { fontSize: 15, fontWeight: '900', color: C.primary },
   selectedChip:    { marginTop: 10, backgroundColor: 'rgba(124,110,250,0.15)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(124,110,250,0.3)' },
-  selectedChipText:{ fontSize: 11, color: Colors.primary, fontWeight: '700' },
-  tapHint:         { marginTop: 8, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, alignSelf: 'flex-start', borderWidth: 1, borderColor: Colors.border },
-  tapHintText:     { fontSize: 11, color: Colors.textMuted, fontWeight: '600' },
+  selectedChipText:{ fontSize: 11, color: C.primary, fontWeight: '700' },
+  tapHint:         { marginTop: 8, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, alignSelf: 'flex-start', borderWidth: 1, borderColor: C.border },
+  tapHintText:     { fontSize: 11, color: C.textMuted, fontWeight: '600' },
 
   summaryBanner:     { margin: 16, borderRadius: 20, padding: 20, overflow: 'hidden' },
   summaryBannerTop:  { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
@@ -543,16 +545,16 @@ const styles = StyleSheet.create({
   summaryBoxDesc:    { fontSize: 11, color: 'rgba(255,255,255,0.8)', lineHeight: 15 },
 
   analysisStack: { marginHorizontal: 16, marginBottom: 16, gap: 12 },
-  analysisCard:  { backgroundColor: Colors.bgCard, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: Colors.border, ...Shadow.sm },
+  analysisCard:  { backgroundColor: C.bgCard, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: C.border, ...Shadow.sm },
   analysisCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 },
   analysisCardIcon:   { fontSize: 16 },
-  analysisCardTitle:  { fontSize: 13, fontWeight: '900', color: Colors.text, flex: 1, letterSpacing: 0.2 },
+  analysisCardTitle:  { fontSize: 13, fontWeight: '900', color: C.text, flex: 1, letterSpacing: 0.2 },
 
-  listRow:    { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: Colors.border, gap: 6 },
+  listRow:    { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: C.border, gap: 6 },
   medal:      { fontSize: 16, marginTop: 1, minWidth: 26 },
-  listDesc:   { fontSize: 12, fontWeight: '600', color: Colors.text, lineHeight: 16 },
-  listDate:   { fontSize: 10, color: Colors.textMuted, marginTop: 2 },
-  listAmount: { fontSize: 13, fontWeight: '800', color: Colors.danger },
+  listDesc:   { fontSize: 12, fontWeight: '600', color: C.text, lineHeight: 16 },
+  listDate:   { fontSize: 10, color: C.textMuted, marginTop: 2 },
+  listAmount: { fontSize: 13, fontWeight: '800', color: C.danger },
   repeatBadge:{ backgroundColor: 'rgba(52,211,153,0.15)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, minWidth: 36, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(52,211,153,0.3)' },
-  repeatText: { fontSize: 12, fontWeight: '900', color: Colors.success },
+  repeatText: { fontSize: 12, fontWeight: '900', color: C.success },
 });

@@ -1,13 +1,15 @@
 // src/components/TrendAlerts.tsx
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Colors, Spacing, Radius } from '../utils/theme';
+import {useColors,  Colors, Spacing, Radius } from '../utils/theme';
 
 interface TrendAlert {
   kategori: string; bu_ay: number; gecen_ay: number; degisim_pct: number;
 }
 
 export default function TrendAlerts({ trends, lang }: { trends: TrendAlert[]; lang: string }) {
+  const Colors = useColors();
+  const styles = make_styles(Colors);
   if (!trends.length) return null;
   const title = lang === 'TR'
     ? `⚠️ Harcama Trend Uyarıları (${trends.length})`
@@ -37,13 +39,13 @@ export default function TrendAlerts({ trends, lang }: { trends: TrendAlert[]; la
   );
 }
 
-const styles = StyleSheet.create({
+const make_styles = (C: any) => StyleSheet.create({
   container: { marginBottom: Spacing.sm },
-  title: { fontSize: 14, fontWeight: '700', color: Colors.text, marginBottom: 8 },
+  title: { fontSize: 14, fontWeight: '700', color: C.text, marginBottom: 8 },
   alert: {
     borderLeftWidth: 4, borderRadius: Radius.sm,
     padding: Spacing.md, marginBottom: 6,
   },
   alertTitle: { fontSize: 13, fontWeight: '700', marginBottom: 2 },
-  alertSub: { fontSize: 12, color: Colors.textMuted },
+  alertSub: { fontSize: 12, color: C.textMuted },
 });
