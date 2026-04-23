@@ -24,7 +24,23 @@ const HARDCODE_FALLBACK: ExchangeRates = {
   lastUpdated: '', source: 'fallback',
 };
 
-// ── Kaynak 1: TCMB Resmi XML ─────────────────────────────────────────────────
+// ── Kaynak 1: Frankfurter API (piyasa orta kuru) ─────────────────────────────
+async function fetchFromFrankfurter(): Promise<ExchangeRates> {
+  const res  = await fetch('https://api.frankfurter.app/latest?from=TRY&to=USD,EUR,GBP');
+  if (!res.ok) throw new Error(`Frankfurter HTTP ${res.status}`);
+  const json = await res.json();
+  const r = json.rates as Record<string, number>;
+  return {
+    TL: 1,
+    USD: parseFloat((1 / r['USD']).toFixed(4)),
+    EUR: parseFloat((1 / r['EUR']).toFixed(4)),
+    GBP: parseFloat((1 / r['GBP']).toFixed(4)),
+    lastUpdated: new Date().toISOString(),
+    source: 'Frankfurter (Piyasa Kuru)',
+  };
+}
+
+// ── Kaynak 2: TCMB Resmi XML ─────────────────────────────────────────────────
 async function fetchFromTCMB(): Promise<ExchangeRates> {
   const res = await fetch('https://www.tcmb.gov.tr/kurlar/today.xml', {
     headers: { 'Accept': 'application/xml, text/xml, */*' },
@@ -33,13 +49,20 @@ async function fetchFromTCMB(): Promise<ExchangeRates> {
   const xml = await res.text();
 
   const extract = (code: string): number => {
-    const re = new RegExp(
+    const buyRe = new RegExp(
+      `<Currency[^>]*Kod="${code}"[^>]*>[\\s\\S]*?<ForexBuying>([\\d.,]+)<\\/ForexBuying>`,
+      'i'
+    );
+    const sellRe = new RegExp(
       `<Currency[^>]*Kod="${code}"[^>]*>[\\s\\S]*?<ForexSelling>([\\d.,]+)<\\/ForexSelling>`,
       'i'
     );
-    const m = xml.match(re);
-    if (!m) throw new Error(`TCMB: ${code} bulunamadı`);
-    return parseFloat(m[1].replace(',', '.'));
+    const buyMatch  = xml.match(buyRe);
+    const sellMatch = xml.match(sellRe);
+    if (!buyMatch || !sellMatch) throw new Error(`TCMB: ${code} bulunamadı`);
+    const buy  = parseFloat(buyMatch[1].replace(',', '.'));
+    const sell = parseFloat(sellMatch[1].replace(',', '.'));
+    return parseFloat(((buy + sell) / 2).toFixed(4));
   };
 
   const usd = extract('USD');
@@ -124,7 +147,7 @@ export async function getExchangeRates(forceRefresh = false): Promise<ExchangeRa
     if (cached) return cached;
   }
 
-  const sources = [fetchFromTCMB, fetchFromOpenER, fetchFromExchangeRateAPI];
+  const sources = [fetchFromFrankfurter, fetchFromTCMB, fetchFromOpenER, fetchFromExchangeRateAPI];
   for (const fn of sources) {
     try {
       const rates = await fn();

@@ -174,16 +174,20 @@ export async function clearAllLocal(): Promise<void> {
   const db = await getDb();
   try {
     if (_hasUserKey) {
-      await db.runAsync(
-        'DELETE FROM transactions WHERE user_key = ?', _currentUserKey
-      );
+      await db.runAsync('DELETE FROM transactions WHERE user_key = ?', _currentUserKey);
     } else {
       await db.execAsync('DELETE FROM transactions;');
     }
+    try { await db.execAsync('DELETE FROM statements;'); } catch {}
+    try { await db.execAsync('DELETE FROM feedbacks;'); } catch {}
   } catch (e) {
-    // Hiçbir şekilde crash etmesin — logout her zaman çalışsın
     console.warn('[localDb] clearAllLocal hata:', e);
   }
+  // AsyncStorage'daki ekstre verilerini de temizle
+  try {
+    const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+    await AsyncStorage.removeItem('fintwin_statements_local');
+  } catch {}
 }
 
 // ── Feedback ──────────────────────────────────────────────────────────────────

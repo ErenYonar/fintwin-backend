@@ -28,7 +28,7 @@ interface LocalStatement {
   islemler: ParsedRow[];
 }
 
-const STORAGE_KEY = 'fintwin_statements_local';
+const getStorageKey = (user: any) => `fintwin_statements_${user?.mail_hash || 'default'}`;
 
 // ── Python'daki parse mantığının JS karşılığı ─────────────────────────────────
 // Atlanacak anahtar kelimeler
@@ -149,12 +149,14 @@ export default function StatementScreen() {
   const styles = make_styles(Colors);
   const lang  = useStore(s => s.lang);
   const token = useStore(s => s.token);
+  const user  = useStore(s => s.user);
+  const STORAGE_KEY = getStorageKey(user);
   const L = lang === 'TR';
   const [statements, setStatements] = useState<LocalStatement[]>([]);
   const [uploading, setUploading]   = useState(false);
   const [selected,  setSelected]    = useState<LocalStatement | null>(null);
 
-  useEffect(() => { loadStatements(); }, []);
+  useEffect(() => { loadStatements(); }, [user]);
 
   const loadStatements = async () => {
     try {

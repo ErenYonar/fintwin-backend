@@ -257,6 +257,8 @@ export const useStore = create<AppStore>((set, get) => ({
 
   deleteAccount: async () => {
     try { await UserAPI.deleteMe(); } catch { /* ignore */ }
+    // Local SQLite'daki tüm verileri de sil
+    try { await clearAllLocal(); } catch { /* ignore */ }
     await get().logout();
   },
 
