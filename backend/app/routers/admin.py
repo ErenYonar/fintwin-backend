@@ -9,7 +9,7 @@ Erişim: /admin (tarayıcıdan)
 import os
 import json
 from datetime import datetime
-from fastapi import APIRouter, Request, Form, Depends
+from fastapi import APIRouter, Request, Form, Depends, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from starlette.responses import Response
 import aiosqlite
@@ -1059,3 +1059,30 @@ async def admin_stats(request: Request, db: aiosqlite.Connection = Depends(get_d
     </div>
     """
     return HTMLResponse(render_page(content, "stats"))
+
+
+@router.post("/reset-all-data")
+async def reset_all_data(
+    request: Request,
+    db: aiosqlite.Connection = Depends(get_db),
+):
+    """TÜM VERİLERİ SİL — sadece admin şifresiyle erişilebilir."""
+    # Admin şifre kontrolü
+    body = await request.json()
+    if body.get("password") != ADMIN_PASSWORD:
+        raise HTTPException(status_code=403, detail="Yetkisiz erişim")
+    
+    # Tüm tabloları temizle
+    await db.execute("DELETE FROM transactions")
+    await db.execute("DELETE FROM statements")
+    await db.execute("DELETE FROM feedbacks")
+    await db.execute("DELETE FROM otp_codes")
+    await db.execute("DELETE FROM users")
+    try:
+        await db.execute("DELETE FROM sync_log")
+    except:
+        pass
+    await db.commit()
+    
+    return {"message": "Tüm veriler silindi.", "status": "ok"}
+
