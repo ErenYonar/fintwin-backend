@@ -147,6 +147,22 @@ async def delete_transaction(
     await db.commit()
 
 
+
+
+# ── LOCAL_ID İLE SİL ──────────────────────────────────────────────────────────
+
+@router.delete("/by-local-id/{local_id}", status_code=204)
+async def delete_by_local_id(
+    local_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: aiosqlite.Connection = Depends(get_db),
+):
+    await db.execute(
+        "UPDATE transactions SET sync_status = 'deleted', updated_at = ? WHERE local_id = ? AND user_id = ?",
+        (datetime.utcnow().isoformat(), local_id, current_user["user_id"])
+    )
+    await db.commit()
+
 # ── TÜM VERİLERİ SİL (hesap ayarları) ───────────────────────────────────────
 
 @router.delete("/", status_code=204)

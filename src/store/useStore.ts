@@ -161,17 +161,17 @@ export const useStore = create<AppStore>((set, get) => ({
   },
 
   deleteTx: async (local_id) => {
-    const { transactions, token } = get();
-    const tx = transactions.find(t => t.local_id === local_id);
+    const { token } = get();
     
+    // 1. Local'den sil
     await deleteTransaction(local_id);
     const txs = await getAllTransactions();
     set({ transactions: txs, analytics: calcAnalytics(txs) });
     
-    // Backend'den sil
-    if (token && tx?.id) {
+    // 2. Backend'den local_id ile sil
+    if (token) {
       try {
-        await TransactionAPI.delete(tx.id);
+        await TransactionAPI.deleteByLocalId(local_id);
       } catch (e) {
         console.warn('[Store] deleteTx backend sync failed:', e);
       }
@@ -188,7 +188,7 @@ export const useStore = create<AppStore>((set, get) => ({
       const localTxs = await getAllTransactions();
       const now = new Date().toISOString();
       
-      // 1. Local işlemleri backend'e gönder
+      // Tüm local işlemleri backend'e gönder
       const payload = {
         device_id: 'mobile',
         transactions: localTxs.map(tx => ({
@@ -205,35 +205,9 @@ export const useStore = create<AppStore>((set, get) => ({
         last_sync: syncState.lastSync || undefined,
       };
       
-      const syncResult = await TransactionAPI.sync(payload);
+      await TransactionAPI.sync(payload);
       
-      // 2. Backend'den gelen işlemleri local'e kaydet
-      if (syncResult?.data?.server_transactions?.length > 0) {
-        const serverTxs = syncResult.data.server_transactions;
-        for (const tx of serverTxs) {
-          // Zaten local'de var mı kontrol et (local_id ile)
-          const exists = localTxs.find(l => l.local_id === tx.local_id);
-          if (!exists && tx.local_id) {
-            await addTransaction({
-              tarih: tx.tarih,
-              kategori: tx.kategori,
-              detay: tx.detay,
-              tutar: tx.tutar,
-              tutar_orijinal: tx.tutar_orijinal,
-              para_birimi: tx.para_birimi,
-              tip: tx.tip,
-              logo: tx.logo,
-              local_id: tx.local_id,
-            });
-          }
-        }
-      }
-
-      // 3. Local işlemleri yeniden yükle
-      const updatedTxs = await getAllTransactions();
       set({
-        transactions: updatedTxs,
-        analytics: calcAnalytics(updatedTxs),
         syncState: {
           isSyncing: false,
           lastSync: now,

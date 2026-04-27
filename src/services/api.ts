@@ -66,6 +66,7 @@ export const TransactionAPI = {
   create:  (data: TransactionCreate) => api.post('/transactions/', data),
   update:  (id: number, data: Partial<TransactionCreate>) => api.put(`/transactions/${id}`, data),
   delete:  (id: number) => api.delete(`/transactions/${id}`),
+  deleteByLocalId: (local_id: string) => api.delete(`/transactions/by-local-id/${local_id}`),
   deleteAll: () => api.delete('/transactions/'),
   sync:    (payload: SyncPayload) => api.post('/transactions/sync', payload),
 };
