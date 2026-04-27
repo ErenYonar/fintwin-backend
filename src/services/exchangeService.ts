@@ -147,7 +147,7 @@ export async function getExchangeRates(forceRefresh = false): Promise<ExchangeRa
     if (cached) return cached;
   }
 
-  const sources = [fetchFromFrankfurter, fetchFromTCMB, fetchFromOpenER, fetchFromExchangeRateAPI];
+  const sources = [fetchFromTCMB, fetchFromFrankfurter, fetchFromOpenER, fetchFromExchangeRateAPI];
   for (const fn of sources) {
     try {
       const rates = await fn();
