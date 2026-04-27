@@ -188,7 +188,7 @@ export const useStore = create<AppStore>((set, get) => ({
       const localTxs = await getAllTransactions();
       const now = new Date().toISOString();
       
-      // Tüm local işlemleri backend'e gönder
+      // 1. Local işlemleri backend'e gönder
       const payload = {
         device_id: 'mobile',
         transactions: localTxs.map(tx => ({
@@ -205,9 +205,35 @@ export const useStore = create<AppStore>((set, get) => ({
         last_sync: syncState.lastSync || undefined,
       };
       
-      await TransactionAPI.sync(payload);
+      const syncResult = await TransactionAPI.sync(payload);
       
+      // 2. Backend'den gelen işlemleri local'e kaydet
+      if (syncResult?.data?.server_transactions?.length > 0) {
+        const serverTxs = syncResult.data.server_transactions;
+        for (const tx of serverTxs) {
+          // Zaten local'de var mı kontrol et (local_id ile)
+          const exists = localTxs.find(l => l.local_id === tx.local_id);
+          if (!exists && tx.local_id) {
+            await addTransaction({
+              tarih: tx.tarih,
+              kategori: tx.kategori,
+              detay: tx.detay,
+              tutar: tx.tutar,
+              tutar_orijinal: tx.tutar_orijinal,
+              para_birimi: tx.para_birimi,
+              tip: tx.tip,
+              logo: tx.logo,
+              local_id: tx.local_id,
+            });
+          }
+        }
+      }
+
+      // 3. Local işlemleri yeniden yükle
+      const updatedTxs = await getAllTransactions();
       set({
+        transactions: updatedTxs,
+        analytics: calcAnalytics(updatedTxs),
         syncState: {
           isSyncing: false,
           lastSync: now,
