@@ -57,7 +57,7 @@ export const AuthAPI = {
 export const UserAPI = {
   getMe:       () => api.get('/users/me'),
   updateMe:    (data: Partial<UserProfile>) => api.put('/users/me', data),
-  deleteMe:    () => api.delete('/users/me'),
+  deleteMe:    () => api.delete('/auth/delete-account'),
   sendFeedback:(mesaj: string, dil = 'TR') => api.post('/users/feedback', { mesaj, dil }),
 };
 

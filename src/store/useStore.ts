@@ -256,8 +256,13 @@ export const useStore = create<AppStore>((set, get) => ({
   },
 
   deleteAccount: async () => {
-    try { await UserAPI.deleteMe(); } catch { /* ignore */ }
-    // Local SQLite'daki tüm verileri de sil
+    try {
+      await UserAPI.deleteMe();
+    } catch (e) {
+      console.warn('[Store] deleteAccount backend failed:', e);
+      throw e; // Hata olursa kullanıcıya yansısın, sessizce geçme
+    }
+    // Backend silme başarılıysa local verileri de temizle
     try { await clearAllLocal(); } catch { /* ignore */ }
     await get().logout();
   },

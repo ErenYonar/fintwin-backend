@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import aiosqlite
 
 from app.core.database import get_db
-from app.core.security import hash_email, create_access_token, OTP_EXPIRE_SECONDS
+from app.core.security import hash_email, create_access_token, OTP_EXPIRE_SECONDS, get_current_user
 from app.models.schemas import (
     RegisterRequest, LoginRequest, OTPVerifyRequest,
     OTPResendRequest, TokenResponse
@@ -116,6 +116,7 @@ async def resend_otp(body: OTPResendRequest, db: aiosqlite.Connection = Depends(
 
 # ── YARDIMCI FONKSİYON ────────────────────────────────────────────────────────
 
+
 async def _send_otp(db, mail_hash: str, email: str, lang: str):
     """OTP üret, DB'ye kaydet, mail gönder."""
     code = generate_otp()
@@ -137,3 +138,35 @@ async def _send_otp(db, mail_hash: str, email: str, lang: str):
         raise HTTPException(500, "Mail gönderilemedi. SMTP ayarlarını kontrol edin.")
 
     return {"message": "Doğrulama kodu gönderildi.", "email": email}
+
+
+# ── HESAP SİL ─────────────────────────────────────────────────────────────────
+
+@router.delete("/delete-account")
+async def delete_account(
+    current_user: dict = Depends(get_current_user),
+    db: aiosqlite.Connection = Depends(get_db),
+):
+    user_id   = current_user["user_id"]
+    mail_hash = current_user["mail_hash"]
+
+    # Kullanıcı var mı?
+    async with db.execute("SELECT id FROM users WHERE id = ?", (user_id,)) as cur:
+        user = await cur.fetchone()
+    if not user:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+
+    # mail_hash ile bağlı verileri sil (CASCADE kapsamı dışındakiler)
+    await db.execute("DELETE FROM otp_codes WHERE mail_hash = ?", (mail_hash,))
+    await db.execute("DELETE FROM feedbacks  WHERE mail_hash = ?", (mail_hash,))
+
+    # sync_log manuel sil (CASCADE yok)
+    await db.execute("DELETE FROM sync_log WHERE user_id = ?", (user_id,))
+
+    # Kullanıcıyı sil → transactions + statements CASCADE ile otomatik silinir
+    await db.execute("DELETE FROM users WHERE id = ?", (user_id,))
+
+    await db.commit()
+
+    return {"message": "Hesap ve tüm veriler kalıcı olarak silindi.", "status": "ok"}
+

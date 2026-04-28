@@ -378,12 +378,12 @@ const dd = StyleSheet.create({
 
 const km = StyleSheet.create({
   overlay:      { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  container:    { backgroundColor: Colors.bgCard, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '85%', borderTopWidth: 1, borderColor: Colors.border },
+  container:    { backgroundColor: Colors.bgCard, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '85%', flex: 1, borderTopWidth: 1, borderColor: Colors.border },
   header:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, borderTopLeftRadius: 24, borderTopRightRadius: 24 },
   headerTitle:  { fontSize: 16, fontWeight: '800', color: '#fff', flex: 1 },
   closeBtn:     { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   closeBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  scroll:       { padding: 20 },
+  scroll:       { padding: 20, flex: 1 },
   section:      { backgroundColor: Colors.bgElevated, borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: Colors.border },
   sectionTitle: { fontSize: 14, fontWeight: '800', color: '#1E1B4B', marginBottom: 8 },
   sectionBody:  { fontSize: 13, color: '#374151', lineHeight: 20 },
