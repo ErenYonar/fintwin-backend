@@ -1102,8 +1102,7 @@ async def admin_ads(request: Request, db: aiosqlite.Connection = Depends(get_db)
         aktif_badge = '<span class="chip chip-green">Aktif</span>' if ad["aktif"] else '<span class="chip chip-red">Pasif</span>'
         rows += f"""
         <tr>
-          <td style="color:var(--text);font-weight:600">{ad['baslik']}</td>
-          <td style="color:var(--text2);font-size:12px">{ad['aciklama'] or '—'}</td>
+          <td><img src="{ad['gorsel_url']}" style="height:40px;border-radius:6px;object-fit:cover;max-width:120px" onerror="this.style.display='none'"></td>
           <td><span class="chip chip-blue">{ad['konum']}</span></td>
           <td>{aktif_badge}</td>
           <td style="color:var(--text3);font-size:12px">{ad['link'] or '—'}</td>
@@ -1133,16 +1132,8 @@ async def admin_ads(request: Request, db: aiosqlite.Connection = Depends(get_db)
       <form method="post" action="/admin/ads/create">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
           <div>
-            <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">Başlık *</label>
-            <input name="baslik" required placeholder="Reklam başlığı" style="width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none">
-          </div>
-          <div>
-            <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">Açıklama</label>
-            <input name="aciklama" placeholder="Kısa açıklama" style="width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none">
-          </div>
-          <div>
             <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">Görsel URL *</label>
-            <input name="gorsel_url" type="url" placeholder="https://...görsel.jpg" style="width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none">
+            <input name="gorsel_url" type="url" required placeholder="https://...görsel.jpg" style="width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none">
           </div>
           <div>
             <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">Tıklama Linki</label>
@@ -1167,7 +1158,7 @@ async def admin_ads(request: Request, db: aiosqlite.Connection = Depends(get_db)
         <table>
           <thead>
             <tr>
-              <th>Başlık</th><th>Açıklama</th><th>Konum</th><th>Durum</th><th>Link</th><th>İşlem</th>
+              <th>Görsel</th><th>Konum</th><th>Durum</th><th>Link</th><th>İşlem</th>
             </tr>
           </thead>
           <tbody>{rows}</tbody>
@@ -1181,9 +1172,7 @@ async def admin_ads(request: Request, db: aiosqlite.Connection = Depends(get_db)
 @router.post("/ads/create")
 async def admin_ads_create(
     request: Request,
-    baslik: str = Form(...),
-    aciklama: str = Form(""),
-    gorsel_url: str = Form(""),
+    gorsel_url: str = Form(...),
     link: str = Form(""),
     konum: str = Form("home"),
     db: aiosqlite.Connection = Depends(get_db),
@@ -1192,8 +1181,8 @@ async def admin_ads_create(
         return RedirectResponse("/admin/")
     now = datetime.utcnow().isoformat()
     await db.execute(
-        "INSERT INTO ads (baslik, aciklama, gorsel_url, link, konum, aktif, created_at) VALUES (?,?,?,?,?,1,?)",
-        (baslik, aciklama, gorsel_url, link, konum, now)
+        "INSERT INTO ads (baslik, gorsel_url, link, konum, aktif, created_at) VALUES (?,?,?,?,1,?)",
+        ('-', gorsel_url, link, konum, now)
     )
     await db.commit()
     return RedirectResponse("/admin/ads", status_code=303)
