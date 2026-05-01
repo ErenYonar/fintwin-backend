@@ -12,6 +12,7 @@ import { SyncBanner } from '../components/UI';
 import TrendAlerts from '../components/TrendAlerts';
 import RecentTransactionsWidget from '../components/RecentTransactionsWidget';
 import AccountActionsWidget from '../components/AccountActionsWidget';
+import AdBanner from '../components/AdBanner';
 import { useColors, Colors, Spacing, Radius, Shadow } from '../utils/theme';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -176,6 +177,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
+        <AdBanner konum="home" lang={lang} />
         <RecentTransactionsWidget lang={lang} />
         <AccountActionsWidget lang={lang} />
         <View style={{ height: 40 }} />

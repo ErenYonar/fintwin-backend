@@ -34,6 +34,7 @@ def render_page(content: str, active_tab: str = "dashboard") -> str:
         ("feedbacks",  "💬", "Öneri & Şikayet"),
         ("users",      "👥", "Kullanıcılar"),
         ("stats",      "📈", "İstatistikler"),
+        ("ads",        "📢", "Reklamlar"),
     ]
     tab_html = ""
     for key, icon, label in tabs:
@@ -1086,3 +1087,137 @@ async def reset_all_data(
     
     return {"message": "Tüm veriler silindi.", "status": "ok"}
 
+@router.get("/ads", response_class=HTMLResponse)
+async def admin_ads(request: Request, db: aiosqlite.Connection = Depends(get_db)):
+    if not is_authenticated(request):
+        return RedirectResponse("/admin/")
+
+    async with db.execute("SELECT * FROM ads ORDER BY created_at DESC") as cur:
+        ads = await cur.fetchall()
+
+    konumlar = ["home", "analysis", "statement"]
+
+    rows = ""
+    for ad in ads:
+        aktif_badge = '<span class="chip chip-green">Aktif</span>' if ad["aktif"] else '<span class="chip chip-red">Pasif</span>'
+        rows += f"""
+        <tr>
+          <td style="color:var(--text);font-weight:600">{ad['baslik']}</td>
+          <td style="color:var(--text2);font-size:12px">{ad['aciklama'] or '—'}</td>
+          <td><span class="chip chip-blue">{ad['konum']}</span></td>
+          <td>{aktif_badge}</td>
+          <td style="color:var(--text3);font-size:12px">{ad['link'] or '—'}</td>
+          <td>
+            <form method="post" action="/admin/ads/{ad['id']}/toggle" style="display:inline">
+              <button type="submit" style="background:none;border:1px solid var(--border2);color:var(--primary2);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px">
+                {'Pasife Al' if ad['aktif'] else 'Aktif Et'}
+              </button>
+            </form>
+            <form method="post" action="/admin/ads/{ad['id']}/delete" style="display:inline;margin-left:6px">
+              <button type="submit" style="background:none;border:1px solid rgba(248,113,113,0.3);color:var(--danger);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px"
+                onclick="return confirm('Silmek istediğinize emin misiniz?')">Sil</button>
+            </form>
+          </td>
+        </tr>"""
+
+    if not ads:
+        rows = '<tr><td colspan="6" class="empty-state">Henüz reklam yok. Aşağıdan ekleyebilirsiniz.</td></tr>'
+
+    konum_options = "".join(f'<option value="{k}">{k}</option>' for k in konumlar)
+
+    content = f"""
+    <div class="page-title">📢 Reklam Yönetimi</div>
+
+    <div class="card">
+      <div class="card-title">Yeni Reklam Ekle</div>
+      <form method="post" action="/admin/ads/create">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div>
+            <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">Başlık *</label>
+            <input name="baslik" required placeholder="Reklam başlığı" style="width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none">
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">Açıklama</label>
+            <input name="aciklama" placeholder="Kısa açıklama" style="width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none">
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">Link</label>
+            <input name="link" type="url" placeholder="https://..." style="width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none">
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">Konum</label>
+            <select name="konum" style="width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none">
+              {konum_options}
+            </select>
+          </div>
+        </div>
+        <button type="submit" style="padding:10px 24px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">
+          + Reklam Ekle
+        </button>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Mevcut Reklamlar</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Başlık</th><th>Açıklama</th><th>Konum</th><th>Durum</th><th>Link</th><th>İşlem</th>
+            </tr>
+          </thead>
+          <tbody>{rows}</tbody>
+        </table>
+      </div>
+    </div>
+    """
+    return HTMLResponse(render_page(content, "ads"))
+
+
+@router.post("/ads/create")
+async def admin_ads_create(
+    request: Request,
+    baslik: str = Form(...),
+    aciklama: str = Form(""),
+    link: str = Form(""),
+    konum: str = Form("home"),
+    db: aiosqlite.Connection = Depends(get_db),
+):
+    if not is_authenticated(request):
+        return RedirectResponse("/admin/")
+    now = datetime.utcnow().isoformat()
+    await db.execute(
+        "INSERT INTO ads (baslik, aciklama, link, konum, aktif, created_at) VALUES (?,?,?,?,1,?)",
+        (baslik, aciklama, link, konum, now)
+    )
+    await db.commit()
+    return RedirectResponse("/admin/ads", status_code=303)
+
+
+@router.post("/ads/{ad_id}/toggle")
+async def admin_ads_toggle(
+    request: Request,
+    ad_id: int,
+    db: aiosqlite.Connection = Depends(get_db),
+):
+    if not is_authenticated(request):
+        return RedirectResponse("/admin/")
+    await db.execute(
+        "UPDATE ads SET aktif = CASE WHEN aktif=1 THEN 0 ELSE 1 END WHERE id = ?",
+        (ad_id,)
+    )
+    await db.commit()
+    return RedirectResponse("/admin/ads", status_code=303)
+
+
+@router.post("/ads/{ad_id}/delete")
+async def admin_ads_delete(
+    request: Request,
+    ad_id: int,
+    db: aiosqlite.Connection = Depends(get_db),
+):
+    if not is_authenticated(request):
+        return RedirectResponse("/admin/")
+    await db.execute("DELETE FROM ads WHERE id = ?", (ad_id,))
+    await db.commit()
+    return RedirectResponse("/admin/ads", status_code=303)

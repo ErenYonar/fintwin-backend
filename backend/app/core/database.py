@@ -115,5 +115,18 @@ async def init_db():
             )
         """)
 
+        # ── REKLAMLAR ──────────────────────────────────────────────────────────
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS ads (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                baslik     TEXT    NOT NULL,
+                aciklama   TEXT    DEFAULT '',
+                link       TEXT    DEFAULT '',
+                konum      TEXT    NOT NULL DEFAULT 'home',
+                aktif      INTEGER DEFAULT 1,
+                created_at TEXT    DEFAULT (datetime('now'))
+            )
+        """)
+
         await db.commit()
         print("[DB] Tablolar hazır ✓")

@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useStore } from '../store/useStore';
 import RecentTransactionsWidget from '../components/RecentTransactionsWidget';
 import AccountActionsWidget from '../components/AccountActionsWidget';
+import AdBanner from '../components/AdBanner';
 import { useColors, Colors, Radius, Spacing, Shadow } from '../utils/theme';
 import { BASE_URL } from '../services/api';
 
@@ -260,6 +261,8 @@ export default function StatementScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bg }} edges={['top']}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+
+        <AdBanner konum="statement" lang={lang} />
 
         {/* ── DARK HEADER ── */}
         <View style={styles.header}>

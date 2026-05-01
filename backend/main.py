@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager
 import uvicorn
 
 from app.core.database import init_db
-from app.routers import auth, transactions, analytics, exchange, statements, users, admin
+from app.routers import auth, transactions, analytics, exchange, statements, users, admin, ads
 
 
 @asynccontextmanager
@@ -44,6 +44,7 @@ app.include_router(analytics.router,    prefix="/analytics",    tags=["Analytics
 app.include_router(exchange.router,     prefix="/exchange",     tags=["Exchange"])
 app.include_router(statements.router,   prefix="/statements",   tags=["Statements"])
 app.include_router(admin.router,        prefix="/admin",        tags=["Admin"])
+app.include_router(ads.router,          prefix="/ads",          tags=["Ads"])
 
 
 @app.get("/")

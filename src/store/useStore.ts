@@ -181,13 +181,13 @@ export const useStore = create<AppStore>((set, get) => ({
   syncWithServer: async () => {
     const { token, syncState } = get();
     if (!token || syncState.isSyncing) return;
-    
+
     set({ syncState: { ...syncState, isSyncing: true } });
-    
+
     try {
       const localTxs = await getAllTransactions();
       const now = new Date().toISOString();
-      
+
       // Tüm local işlemleri backend'e gönder
       const payload = {
         device_id: 'mobile',
@@ -204,18 +204,46 @@ export const useStore = create<AppStore>((set, get) => ({
         })),
         last_sync: syncState.lastSync || undefined,
       };
-      
-      await TransactionAPI.sync(payload);
-      
+
+      const { data } = await TransactionAPI.sync(payload);
+
+      // Backend'den gelen işlemleri local'e kaydet (yeni cihazda veri indirme)
+      if (data.server_transactions && data.server_transactions.length > 0) {
+        const existingLocalIds = new Set(localTxs.map((t: any) => t.local_id).filter(Boolean));
+        for (const tx of data.server_transactions) {
+          if (!existingLocalIds.has(tx.local_id)) {
+            try {
+              await addTransaction({
+                tarih: tx.tarih,
+                kategori: tx.kategori,
+                detay: tx.detay,
+                tutar: tx.tutar,
+                tutar_orijinal: tx.tutar_orijinal,
+                para_birimi: tx.para_birimi,
+                tip: tx.tip,
+                logo: tx.logo,
+                local_id: tx.local_id || String(tx.id),
+              });
+            } catch (e) {
+              console.warn('[Store] server tx insert failed:', e);
+            }
+          }
+        }
+      }
+
+      // Güncel local işlemleri store'a yükle
+      const updatedTxs = await getAllTransactions();
       set({
+        transactions: updatedTxs,
+        analytics: calcAnalytics(updatedTxs),
         syncState: {
           isSyncing: false,
           lastSync: now,
           pendingCount: 0,
           isOnline: true,
-        }
+        },
       });
-      
+
       await AsyncStorage.setItem('fintwin_last_sync', now);
     } catch (e) {
       console.warn('[Store] syncWithServer failed:', e);
@@ -256,13 +284,8 @@ export const useStore = create<AppStore>((set, get) => ({
   },
 
   deleteAccount: async () => {
-    try {
-      await UserAPI.deleteMe();
-    } catch (e) {
-      console.warn('[Store] deleteAccount backend failed:', e);
-      throw e; // Hata olursa kullanıcıya yansısın, sessizce geçme
-    }
-    // Backend silme başarılıysa local verileri de temizle
+    try { await UserAPI.deleteMe(); } catch { /* ignore */ }
+    // Local SQLite'daki tüm verileri de sil
     try { await clearAllLocal(); } catch { /* ignore */ }
     await get().logout();
   },

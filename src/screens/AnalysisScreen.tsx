@@ -11,6 +11,7 @@ import { useStore } from '../store/useStore';
 import { Card, SectionHeader, EmptyState } from '../components/UI';
 import RecentTransactionsWidget from '../components/RecentTransactionsWidget';
 import AccountActionsWidget from '../components/AccountActionsWidget';
+import AdBanner from '../components/AdBanner';
 import { useColors, Colors, Spacing, Radius, Shadow } from '../utils/theme';
 import { useTranslation } from '../hooks/useTranslation';
 import { useNavigation } from '@react-navigation/native';
@@ -424,6 +425,7 @@ export default function AnalysisScreen() {
         )}
 
         <View style={{ paddingHorizontal: Spacing.lg }}>
+          <AdBanner konum="analysis" lang={lang} />
           <RecentTransactionsWidget lang={lang} />
           <AccountActionsWidget lang={lang} />
         </View>

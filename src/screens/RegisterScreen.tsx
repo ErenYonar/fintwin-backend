@@ -171,14 +171,18 @@ function KVKKModal({ visible, onClose, lang }: { visible: boolean; onClose: () =
               <Text style={km.closeBtnText}>✕</Text>
             </TouchableOpacity>
           </LinearGradient>
-          <ScrollView style={km.scroll}>
-            {sections.map((s, i) => (
-              <View key={i} style={[km.section, { backgroundColor: Colors.bgCard, borderColor: Colors.border }]}>
+          <FlatList
+            data={sections}
+            keyExtractor={(_, i) => String(i)}
+            style={km.scroll}
+            contentContainerStyle={{ paddingBottom: 16 }}
+            renderItem={({ item: s }) => (
+              <View style={[km.section, { backgroundColor: Colors.bgCard, borderColor: Colors.border }]}>
                 <Text style={[km.sectionTitle, { color: Colors.text }]}>{s.baslik}</Text>
                 <Text style={[km.sectionBody, { color: Colors.textMuted }]}>{s.icerik}</Text>
               </View>
-            ))}
-          </ScrollView>
+            )}
+          />
           <TouchableOpacity style={km.footer} onPress={onClose}>
             <Text style={km.footerText}>{closeText}</Text>
           </TouchableOpacity>
@@ -378,12 +382,12 @@ const dd = StyleSheet.create({
 
 const km = StyleSheet.create({
   overlay:      { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  container:    { backgroundColor: Colors.bgCard, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '85%', flex: 1, borderTopWidth: 1, borderColor: Colors.border },
+  container:    { backgroundColor: Colors.bgCard, borderTopLeftRadius: 24, borderTopRightRadius: 24, height: '85%', borderTopWidth: 1, borderColor: Colors.border },
   header:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, borderTopLeftRadius: 24, borderTopRightRadius: 24 },
   headerTitle:  { fontSize: 16, fontWeight: '800', color: '#fff', flex: 1 },
   closeBtn:     { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   closeBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  scroll:       { padding: 20, flex: 1 },
+  scroll:       { flex: 1, paddingHorizontal: 20, paddingTop: 20 },
   section:      { backgroundColor: Colors.bgElevated, borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: Colors.border },
   sectionTitle: { fontSize: 14, fontWeight: '800', color: '#1E1B4B', marginBottom: 8 },
   sectionBody:  { fontSize: 13, color: '#374151', lineHeight: 20 },
