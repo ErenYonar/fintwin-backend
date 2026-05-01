@@ -1141,7 +1141,11 @@ async def admin_ads(request: Request, db: aiosqlite.Connection = Depends(get_db)
             <input name="aciklama" placeholder="Kısa açıklama" style="width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none">
           </div>
           <div>
-            <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">Link</label>
+            <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">Görsel URL *</label>
+            <input name="gorsel_url" type="url" placeholder="https://...görsel.jpg" style="width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none">
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">Tıklama Linki</label>
             <input name="link" type="url" placeholder="https://..." style="width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none">
           </div>
           <div>
@@ -1179,6 +1183,7 @@ async def admin_ads_create(
     request: Request,
     baslik: str = Form(...),
     aciklama: str = Form(""),
+    gorsel_url: str = Form(""),
     link: str = Form(""),
     konum: str = Form("home"),
     db: aiosqlite.Connection = Depends(get_db),
@@ -1187,8 +1192,8 @@ async def admin_ads_create(
         return RedirectResponse("/admin/")
     now = datetime.utcnow().isoformat()
     await db.execute(
-        "INSERT INTO ads (baslik, aciklama, link, konum, aktif, created_at) VALUES (?,?,?,?,1,?)",
-        (baslik, aciklama, link, konum, now)
+        "INSERT INTO ads (baslik, aciklama, gorsel_url, link, konum, aktif, created_at) VALUES (?,?,?,?,?,1,?)",
+        (baslik, aciklama, gorsel_url, link, konum, now)
     )
     await db.commit()
     return RedirectResponse("/admin/ads", status_code=303)

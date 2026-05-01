@@ -60,11 +60,12 @@ async def create_ad(
 ):
     now = datetime.utcnow().isoformat()
     await db.execute("""
-        INSERT INTO ads (baslik, aciklama, link, konum, aktif, created_at)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO ads (baslik, aciklama, gorsel_url, link, konum, aktif, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (
         body.get("baslik", ""),
         body.get("aciklama", ""),
+        body.get("gorsel_url", ""),
         body.get("link", ""),
         body.get("konum", "home"),
         1 if body.get("aktif", True) else 0,

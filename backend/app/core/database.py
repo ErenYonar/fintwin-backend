@@ -121,6 +121,7 @@ async def init_db():
                 id         INTEGER PRIMARY KEY AUTOINCREMENT,
                 baslik     TEXT    NOT NULL,
                 aciklama   TEXT    DEFAULT '',
+                gorsel_url TEXT    DEFAULT '',
                 link       TEXT    DEFAULT '',
                 konum      TEXT    NOT NULL DEFAULT 'home',
                 aktif      INTEGER DEFAULT 1,
